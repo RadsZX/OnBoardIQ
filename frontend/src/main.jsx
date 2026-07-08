@@ -7,7 +7,7 @@ import {
 import {
   Activity, AlertTriangle, ChevronDown, Download, FileDown, Gauge,
   LayoutDashboard, LogOut, Search, ShieldCheck, SlidersHorizontal,
-  UserRoundCheck, Users,
+  UserRoundCheck, Users, Zap, TrendingUp, Lightbulb, BarChart2,
 } from 'lucide-react';
 import { api, clearToken, downloadCsv, getToken, setToken } from './api';
 import './index.css';
@@ -18,6 +18,7 @@ const NAV = [
   ['Customer Segmentation', Users],
   ['Root Cause Analysis', ShieldCheck],
   ['Business Impact Simulator', SlidersHorizontal],
+  ['Action Brief', Zap],
 ];
 const COLORS = ['#2F80ED', '#12B886', '#F59F00', '#E03131', '#7048E8', '#0CA678'];
 const defaultFilters = { start_date: null, end_date: null, loan_type: 'All', city: 'All', device_type: 'All', age_group: 'All' };
@@ -181,9 +182,21 @@ function ChartBox({ id, title, children, csvKind, filters }) {
   );
 }
 
+function FilteredOut({ dimension, value }) {
+  return (
+    <div className="chart-card flex h-[17rem] flex-col items-center justify-center gap-2 text-center">
+      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">{dimension} = {value}</span>
+      <p className="text-sm text-slate-400">Breakdown not shown — already filtered to a single {dimension.toLowerCase()}.</p>
+    </div>
+  );
+}
+
 function Dashboard({ data, filters }) {
   if (!data) return <Loading />;
   const { kpis, charts } = data;
+  const deviceActive  = filters.device_type && filters.device_type !== 'All';
+  const ageActive     = filters.age_group   && filters.age_group   !== 'All';
+  const loanActive    = filters.loan_type   && filters.loan_type   !== 'All';
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -200,15 +213,21 @@ function Dashboard({ data, filters }) {
         <ChartBox id="dropoff" title="Drop-off by Step" csvKind="dropoff" filters={filters}>
           <ResponsiveContainer><BarChart data={charts.dropoff}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="step" tick={{ fontSize: 11 }} /><YAxis /><Tooltip /><Bar dataKey="dropoffs" fill="#E03131" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
         </ChartBox>
-        <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
-          <ResponsiveContainer><PieChart><Pie data={charts.completion_by_device} dataKey="completion_rate" nameKey="device_type" outerRadius={105} label>{charts.completion_by_device.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer>
-        </ChartBox>
-        <ChartBox id="age" title="Completion by Age Group" filters={filters}>
-          <ResponsiveContainer><BarChart data={charts.completion_by_age}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="age_group" /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#7048E8" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
-        </ChartBox>
-        <ChartBox id="loan" title="Completion by Loan Type" filters={filters}>
-          <ResponsiveContainer><BarChart data={charts.completion_by_loan}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="loan_type" tick={{ fontSize: 11 }} /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#0CA678" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
-        </ChartBox>
+        {deviceActive
+          ? <FilteredOut dimension="Device" value={filters.device_type} />
+          : <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
+              <ResponsiveContainer><PieChart><Pie data={charts.completion_by_device} dataKey="completion_rate" nameKey="device_type" outerRadius={105} label>{charts.completion_by_device.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer>
+            </ChartBox>}
+        {ageActive
+          ? <FilteredOut dimension="Age Group" value={filters.age_group} />
+          : <ChartBox id="age" title="Completion by Age Group" filters={filters}>
+              <ResponsiveContainer><BarChart data={charts.completion_by_age}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="age_group" /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#7048E8" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
+            </ChartBox>}
+        {loanActive
+          ? <FilteredOut dimension="Loan Type" value={filters.loan_type} />
+          : <ChartBox id="loan" title="Completion by Loan Type" filters={filters}>
+              <ResponsiveContainer><BarChart data={charts.completion_by_loan}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="loan_type" tick={{ fontSize: 11 }} /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#0CA678" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
+            </ChartBox>}
         <ChartBox id="daily" title="Daily Trend" filters={filters}>
           <ResponsiveContainer><LineChart data={charts.daily_trend}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" tick={{ fontSize: 10 }} /><YAxis domain={[0, 100]} /><Tooltip /><Line type="monotone" dataKey="completion_rate" stroke="#2F80ED" strokeWidth={2} dot={false} /></LineChart></ResponsiveContainer>
         </ChartBox>
@@ -366,14 +385,201 @@ function Loading() {
   return <div className="rounded-lg border border-slate-200 bg-white p-8 text-center text-slate-500">Loading decision intelligence...</div>;
 }
 
+// ─── Action Brief ────────────────────────────────────────────────────────────
+
+function HealthScore({ cards, topFindings }) {
+  if (!cards || cards.length === 0) return null;
+  const highCount = cards.filter((c) => c.priority === 'High').length;
+  const avgConfidence = Math.round(cards.reduce((s, c) => s + c.confidence, 0) / cards.length);
+  // Score: penalise for high-priority cards, reward confidence
+  const raw = Math.max(10, 100 - highCount * 14 - (cards.length - highCount) * 5 + (avgConfidence - 80));
+  const score = Math.min(99, Math.round(raw));
+  const grade = score >= 80 ? 'A' : score >= 65 ? 'B' : score >= 50 ? 'C' : 'D';
+  const color = score >= 80 ? 'text-emerald-600' : score >= 65 ? 'text-amber-500' : 'text-red-500';
+  const ring = score >= 80 ? 'border-emerald-400' : score >= 65 ? 'border-amber-400' : 'border-red-400';
+  return (
+    <section className="chart-card flex flex-wrap items-center gap-6">
+      <div className={`flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-full border-4 ${ring}`}>
+        <span className={`text-3xl font-black ${color}`}>{grade}</span>
+        <span className="text-xs font-semibold text-slate-400">{score}/100</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <h3 className="text-lg font-bold">Funnel Health Score</h3>
+        <p className="mt-1 text-sm text-slate-500">
+          {highCount} high-priority issue{highCount !== 1 ? 's' : ''} detected across {cards.length} friction areas.
+          Average model confidence: {avgConfidence}%.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {cards.map((c) => (
+            <span key={c.kind} className={`rounded-full px-3 py-0.5 text-xs font-semibold ${
+              c.priority === 'High' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
+            }`}>{c.kind.replaceAll('_', ' ')}</span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TopInsights({ findings }) {
+  if (!findings || findings.length === 0) return null;
+  return (
+    <section className="chart-card">
+      <div className="mb-4 flex items-center gap-2">
+        <Lightbulb size={18} className="text-amber-500" />
+        <h3 className="font-bold">Top Insights</h3>
+        <span className="ml-auto rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">Dynamic · filter-aware</span>
+      </div>
+      <ul className="space-y-2">
+        {findings.map((f, i) => (
+          <li key={i} className="flex items-start gap-3 rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-sm">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">{i + 1}</span>
+            <span className="text-slate-700">{f}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+const PRIORITY_STYLE = {
+  High: { badge: 'bg-red-50 text-red-700 border-red-200', border: 'border-l-red-500' },
+  Medium: { badge: 'bg-amber-50 text-amber-700 border-amber-200', border: 'border-l-amber-400' },
+  Low: { badge: 'bg-slate-100 text-slate-600 border-slate-200', border: 'border-l-slate-300' },
+};
+
+function ActionCard({ card }) {
+  const style = PRIORITY_STYLE[card.priority] || PRIORITY_STYLE.Medium;
+  return (
+    <article className={`rounded-xl border border-slate-200 border-l-4 ${style.border} bg-white shadow-soft overflow-hidden`}>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-slate-50 px-5 py-3">
+        <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
+          {card.kind.replaceAll('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+        </span>
+        <div className="flex items-center gap-2">
+          <span className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${style.badge}`}>{card.priority} Priority</span>
+          <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">{card.confidence}% confidence</span>
+        </div>
+      </div>
+      <div className="grid gap-0 md:grid-cols-2">
+        <div className="border-b border-slate-100 p-5 md:border-b-0 md:border-r">
+          <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-400" /> What happened?
+          </p>
+          <p className="text-sm font-semibold text-slate-800">{card.finding}</p>
+        </div>
+        <div className="border-b border-slate-100 p-5">
+          <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" /> Why did it happen?
+          </p>
+          <p className="text-sm text-slate-600">{card.evidence}</p>
+        </div>
+        <div className="border-b border-slate-100 p-5 md:border-b-0 md:border-r md:border-t">
+          <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" /> What should we do?
+          </p>
+          <p className="text-sm text-slate-700">{card.recommendation}</p>
+        </div>
+        <div className="border-t border-slate-100 p-5">
+          <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" /> Expected business impact?
+          </p>
+          <p className="text-sm font-semibold text-emerald-700">{card.expected_impact}</p>
+          <p className="mt-1 text-xs text-slate-400">{card.affected_users.toLocaleString()} affected users</p>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function CombinedImpact({ cards }) {
+  if (!cards || cards.length === 0) return null;
+  // Parse "+X.X% completion, ~Y additional applications, ~Rs Z revenue" from each card
+  let totalApps = 0;
+  let totalRevenue = 0;
+  let totalPts = 0;
+  cards.forEach((c) => {
+    const m = c.expected_impact.match(/\+([\d.]+)%.*~([\d,]+) additional.*~Rs ([\d,]+)/);
+    if (m) {
+      totalPts += parseFloat(m[1]);
+      totalApps += parseInt(m[2].replace(/,/g, ''), 10);
+      totalRevenue += parseInt(m[3].replace(/,/g, ''), 10);
+    }
+  });
+  return (
+    <section className="chart-card">
+      <div className="mb-4 flex items-center gap-2">
+        <TrendingUp size={18} className="text-emerald-500" />
+        <h3 className="font-bold">Combined Impact Estimate</h3>
+        <span className="ml-auto text-xs text-slate-400">If all recommendations implemented</span>
+      </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="rounded-lg bg-emerald-50 p-4 text-center">
+          <div className="text-2xl font-black text-emerald-700">+{totalPts.toFixed(1)}%</div>
+          <div className="mt-1 text-xs font-semibold uppercase text-emerald-600">Completion Rate Uplift</div>
+        </div>
+        <div className="rounded-lg bg-blue-50 p-4 text-center">
+          <div className="text-2xl font-black text-blue-700">~{totalApps.toLocaleString()}</div>
+          <div className="mt-1 text-xs font-semibold uppercase text-blue-600">Additional Completed Applications</div>
+        </div>
+        <div className="rounded-lg bg-amber-50 p-4 text-center">
+          <div className="text-2xl font-black text-amber-700">₹{totalRevenue.toLocaleString()}</div>
+          <div className="mt-1 text-xs font-semibold uppercase text-amber-600">Estimated Revenue Uplift</div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+function ActionBrief({ filters }) {
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    setData(null);
+    api('/insights', { method: 'POST', body: JSON.stringify(filters) }).then(setData);
+  }, [filters]);
+
+  if (!data) return <Loading />;
+
+  const { action_cards: cards = [], top_findings: findings = [] } = data;
+
+  return (
+    <div className="space-y-5">
+      {/* 1. Funnel Health Score */}
+      <HealthScore cards={cards} topFindings={findings} />
+
+      {/* 2. Top Insights */}
+      <TopInsights findings={findings} />
+
+      {/* 3. Action Cards — the 4-question executive cards */}
+      {cards.length > 0 && (
+        <section className="chart-card">
+          <div className="mb-4 flex items-center gap-2">
+            <BarChart2 size={18} className="text-blue-600" />
+            <h3 className="font-bold">Executive Action Cards</h3>
+            <span className="ml-2 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700">
+              {cards.length} friction area{cards.length !== 1 ? 's' : ''} · filter-aware
+            </span>
+          </div>
+          <div className="grid gap-5">
+            {cards.map((card) => <ActionCard key={card.kind} card={card} />)}
+          </div>
+        </section>
+      )}
+
+      {/* 4. Combined Impact Estimate */}
+      <CombinedImpact cards={cards} />
+    </div>
+  );
+}
+
 function App() {
   const [user, setUser] = useState(null);
   const [active, setActive] = useState('Dashboard');
   const [metadata, setMetadata] = useState({});
-  const [filters, setFilters] = useState(defaultFilters);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [filters, setFilters] = useState(defaultFilters);          // live UI state
+  const [appliedFilters, setAppliedFilters] = useState(defaultFilters); // sent to APIs on Apply
   const [dashboard, setDashboard] = useState(null);
-  const effectiveFilters = useMemo(() => ({ ...filters }), [filters, refreshKey]);
 
   useEffect(() => {
     if (!getToken()) return;
@@ -383,24 +589,29 @@ function App() {
     if (!user) return;
     api('/metadata').then((m) => {
       setMetadata(m);
-      setFilters((f) => ({ ...f, start_date: m.date_min, end_date: m.date_max }));
+      const dateRange = { start_date: m.date_min, end_date: m.date_max };
+      setFilters((f) => ({ ...f, ...dateRange }));
+      setAppliedFilters((f) => ({ ...f, ...dateRange })); // auto-apply date range on load
     });
   }, [user]);
   useEffect(() => {
-    if (!user || !metadata.date_min) return;
-    api('/analytics/dashboard', { method: 'POST', body: JSON.stringify(effectiveFilters) }).then(setDashboard);
-  }, [user, metadata.date_min, effectiveFilters]);
+    if (!user || !appliedFilters.start_date) return;
+    api('/analytics/dashboard', { method: 'POST', body: JSON.stringify(appliedFilters) }).then(setDashboard);
+  }, [user, appliedFilters]);
+
+  const handleApply = () => setAppliedFilters({ ...filters });
 
   if (!user) return <Login onLogin={setUser} />;
   const logout = () => { clearToken(); setUser(null); };
   return (
     <Shell user={user} onLogout={logout} active={active} setActive={setActive}>
-      {active !== 'Journey Explorer' && <FilterBar metadata={metadata} filters={filters} setFilters={setFilters} onRefresh={() => setRefreshKey((x) => x + 1)} />}
-      {active === 'Dashboard' && <Dashboard data={dashboard} filters={effectiveFilters} />}
+      {active !== 'Journey Explorer' && <FilterBar metadata={metadata} filters={filters} setFilters={setFilters} onRefresh={handleApply} />}
+      {active === 'Dashboard' && <Dashboard data={dashboard} filters={appliedFilters} />}
       {active === 'Journey Explorer' && <JourneyExplorer metadata={metadata} />}
-      {active === 'Customer Segmentation' && <Segmentation filters={effectiveFilters} />}
-      {active === 'Root Cause Analysis' && <RootCauses filters={effectiveFilters} />}
-      {active === 'Business Impact Simulator' && <Simulator filters={effectiveFilters} />}
+      {active === 'Customer Segmentation' && <Segmentation filters={appliedFilters} />}
+      {active === 'Root Cause Analysis' && <RootCauses filters={appliedFilters} />}
+      {active === 'Business Impact Simulator' && <Simulator filters={appliedFilters} />}
+      {active === 'Action Brief' && <ActionBrief filters={appliedFilters} />}
     </Shell>
   );
 }

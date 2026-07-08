@@ -158,7 +158,7 @@ def _time_spent(rng: np.random.Generator, step: str, c: dict, error: str, droppe
 def generate_onboarding_data(config: GenerationConfig = GenerationConfig()) -> pd.DataFrame:
     rng = np.random.default_rng(config.seed)
     rows: list[dict] = []
-    start = pd.Timestamp.today().normalize() - pd.Timedelta(days=89)
+    start = pd.Timestamp("2026-04-10")  # fixed anchor — stable across restarts
 
     for i in range(1, config.sessions + 1):
         customer = _base_customer(rng, i)

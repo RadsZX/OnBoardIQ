@@ -55,9 +55,11 @@ def generate_recommendations(df: pd.DataFrame) -> list[dict]:
             "Age 50+ customers",
         )
 
-    self_emp_time = sessions[sessions["employment_status"].eq("Self-employed")]["total_time_seconds"].mean()
+    self_emp_s = sessions[sessions["employment_status"].eq("Self-employed")]
+    salaried_s = sessions[sessions["employment_status"].eq("Salaried")]
+    self_emp_time = self_emp_s["total_time_seconds"].mean() if len(self_emp_s) >= 20 else 0
     avg_time = sessions["total_time_seconds"].mean()
-    if self_emp_time > avg_time * 1.18:
+    if len(self_emp_s) >= 20 and len(salaried_s) >= 20 and self_emp_time > avg_time * 1.18:
         add(
             "Self-employed applicants take materially longer during income verification.",
             "Offer bank-statement ingestion and clearer income-proof examples for self-employed applicants.",
@@ -67,26 +69,34 @@ def generate_recommendations(df: pd.DataFrame) -> list[dict]:
             "Self-employed applicants",
         )
 
-    browser_gap = sessions[sessions["browser"].isin(["Samsung Internet", "Firefox"])]["completed"].mean()
+    browser_sessions = sessions[sessions["browser"].isin(["Samsung Internet", "Firefox"])]
     all_completion = sessions["completed"].mean()
-    if browser_gap < all_completion - 0.025:
-        add(
-            "Some browsers underperform in camera and document handling steps.",
-            "Add browser capability checks and route unsupported flows to a lightweight fallback uploader.",
-            1.9,
-            "Medium",
-            "Compatibility failures are smaller than upload issues but are highly actionable with front-end detection.",
-            "Samsung Internet and Firefox",
-        )
+    if len(browser_sessions) >= 20:
+        browser_gap = browser_sessions["completed"].mean()
+        if browser_gap < all_completion - 0.025:
+            add(
+                "Some browsers underperform in camera and document handling steps.",
+                "Add browser capability checks and route unsupported flows to a lightweight fallback uploader.",
+                1.9,
+                "Medium",
+                "Compatibility failures are smaller than upload issues but are highly actionable with front-end detection.",
+                "Samsung Internet and Firefox",
+            )
 
-    add(
-        "Long journeys are strongly associated with abandonment.",
-        "Turn on auto-save and proactive recovery prompts after 4 minutes of inactivity.",
-        3.1,
-        "High",
-        "Auto-save reduces loss aversion and lets applicants return without re-entering verification data.",
-        "All incomplete sessions",
-    )
+    # Auto-save: only recommend if long-journey sessions actually complete materially less often
+    long_journey = sessions[sessions["total_time_seconds"] >= sessions["total_time_seconds"].quantile(0.75)]
+    if len(long_journey) >= 20:
+        long_rate = long_journey["completed"].mean() * 100
+        overall_rate = sessions["completed"].mean() * 100
+        if overall_rate - long_rate >= 5.0:
+            add(
+                "Long journeys are strongly associated with abandonment.",
+                "Turn on auto-save and proactive recovery prompts after 4 minutes of inactivity.",
+                3.1,
+                "High",
+                f"Sessions in the top quartile by duration complete {overall_rate - long_rate:.1f} percentage points less often, suggesting fatigue and accidental exit are material loss drivers.",
+                "All incomplete sessions",
+            )
 
     priority_rank = {"High": 3, "Medium": 2, "Low": 1}
     return sorted(recommendations, key=lambda r: (priority_rank[r["priority"]], r["estimated_completed_applications"]), reverse=True)

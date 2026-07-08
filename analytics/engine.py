@@ -350,21 +350,72 @@ def action_brief_cards(df: pd.DataFrame, min_sample: int = 20) -> list[dict]:
 
 def executive_insights(df: pd.DataFrame, recs: list[dict]) -> dict:
     sessions = session_level(df)
-    dropoffs = sessions.loc[~sessions["completed"], "exit_step"].value_counts(normalize=True).mul(100)
-    android = sessions[sessions["device_type"].eq("Android")]["completed"].mean() * 100
-    desktop = sessions[sessions["device_type"].eq("Desktop")]["completed"].mean() * 100
-    older_kyc = sessions[(sessions["age"] >= 50) & (sessions["exit_step"].eq("KYC Verification"))].shape[0]
-    younger_kyc_rate = sessions[(sessions["age"] < 50) & (sessions["exit_step"].eq("KYC Verification"))].shape[0] / max(1, sessions[sessions["age"] < 50].shape[0])
-    older_kyc_rate = older_kyc / max(1, sessions[sessions["age"] >= 50].shape[0])
-    self_emp = sessions[sessions["employment_status"].eq("Self-employed")]["total_time_seconds"].mean()
-    salaried = sessions[sessions["employment_status"].eq("Salaried")]["total_time_seconds"].mean()
-    top = [
-        f"Document Upload contributes {dropoffs.get('Document Upload', 0):.1f}% of all abandonments.",
-        f"Android completion is {max(0, desktop - android):.1f} percentage points below desktop.",
-        f"Self-employed applicants spend {max(0, (self_emp / salaried - 1) * 100):.1f}% longer in the journey than salaried applicants.",
-        f"Users older than 50 abandon KYC {older_kyc_rate / max(younger_kyc_rate, 0.001):.1f}x as often as younger users.",
-        f"Slow-network users complete at {sessions[sessions['network_speed'].eq('Slow')]['completed'].mean() * 100:.1f}%, creating a clear mobile resilience opportunity.",
-    ]
+    MIN_N = 20  # minimum sessions in each comparison group for an insight to be valid
+    top: list[str] = []
+
+    # Insight 1: Document Upload share of abandonments — only if >= 10%
+    abandoned = sessions.loc[~sessions["completed"]]
+    if len(abandoned) >= MIN_N:
+        doc_pct = float(abandoned["exit_step"].eq("Document Upload").mean() * 100)
+        if doc_pct >= 10.0:
+            top.append(f"Document Upload contributes {doc_pct:.1f}% of all abandonments.")
+
+    # Insight 2: Android vs Desktop completion gap — only if gap >= 2 pp and both groups present
+    android_s = sessions[sessions["device_type"].eq("Android")]
+    desktop_s = sessions[sessions["device_type"].eq("Desktop")]
+    if len(android_s) >= MIN_N and len(desktop_s) >= MIN_N:
+        gap = desktop_s["completed"].mean() * 100 - android_s["completed"].mean() * 100
+        if gap >= 2.0:
+            top.append(
+                f"Android completion is {gap:.1f} percentage points below desktop "
+                f"({android_s['completed'].mean() * 100:.1f}% vs {desktop_s['completed'].mean() * 100:.1f}%)."
+            )
+
+    # Insight 3: Self-employed vs salaried time — only if gap >= 15% and both groups present
+    self_emp_s = sessions[sessions["employment_status"].eq("Self-employed")]
+    salaried_s = sessions[sessions["employment_status"].eq("Salaried")]
+    if len(self_emp_s) >= MIN_N and len(salaried_s) >= MIN_N:
+        self_time = float(self_emp_s["total_time_seconds"].mean())
+        sal_time = float(salaried_s["total_time_seconds"].mean())
+        if sal_time > 0:
+            pct_longer = (self_time / sal_time - 1) * 100
+            if pct_longer >= 15.0:
+                top.append(
+                    f"Self-employed applicants spend {pct_longer:.1f}% longer in the journey than salaried applicants."
+                )
+
+    # Insight 4: KYC abandonment ratio 50+ vs younger — only if ratio >= 1.5x and both groups present
+    older_s = sessions[sessions["age"].ge(50)]
+    younger_s = sessions[sessions["age"].lt(50)]
+    if len(older_s) >= MIN_N and len(younger_s) >= MIN_N:
+        older_kyc_rate = float(older_s["exit_step"].eq("KYC Verification").mean())
+        younger_kyc_rate = float(younger_s["exit_step"].eq("KYC Verification").mean())
+        if younger_kyc_rate > 0.01:
+            ratio = older_kyc_rate / younger_kyc_rate
+            if ratio >= 1.5:
+                top.append(
+                    f"Users older than 50 abandon KYC {ratio:.1f}x as often as younger users "
+                    f"({older_kyc_rate * 100:.1f}% vs {younger_kyc_rate * 100:.1f}%)."
+                )
+        elif older_kyc_rate >= 0.05:
+            # Both groups exist but younger_kyc_rate is negligible — report absolute rate
+            top.append(
+                f"Users older than 50 have elevated KYC abandonment at {older_kyc_rate * 100:.1f}%."
+            )
+
+    # Insight 5: Slow vs fast network completion gap — only if gap >= 3 pp and both groups present
+    slow_s = sessions[sessions["network_speed"].eq("Slow")]
+    fast_s = sessions[sessions["network_speed"].eq("Fast")]
+    if len(slow_s) >= MIN_N and len(fast_s) >= MIN_N:
+        slow_rate = float(slow_s["completed"].mean() * 100)
+        fast_rate = float(fast_s["completed"].mean() * 100)
+        gap = fast_rate - slow_rate
+        if gap >= 3.0:
+            top.append(
+                f"Slow-network users complete at {slow_rate:.1f}% versus {fast_rate:.1f}% on fast networks "
+                f"— a clear mobile resilience opportunity."
+            )
+
     return {
         "top_findings": top,
         "top_recommendations": recs[:5],
