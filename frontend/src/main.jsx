@@ -5,11 +5,17 @@ import {
   PieChart, Pie, Cell, AreaChart, Area,
 } from 'recharts';
 import {
+<<<<<<< HEAD
   Activity, AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, Download, FileDown, Gauge,
   LayoutDashboard, LogOut, Search, ShieldCheck, SlidersHorizontal,
   UserRoundCheck, Users, Zap, TrendingUp, Lightbulb, BarChart2,
   Brain, ArrowRight, CheckCircle, Mail, Phone, MapPin, Globe,
   Target, LineChart as LineChartIcon, Layers, Clock, Lock,
+=======
+  Activity, AlertTriangle, ChevronDown, Download, FileDown, Gauge,
+  LayoutDashboard, LogOut, Search, ShieldCheck, SlidersHorizontal,
+  UserRoundCheck, Users, Zap, TrendingUp, Lightbulb, BarChart2,
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
 } from 'lucide-react';
 import { api, clearToken, downloadCsv, getToken, setToken } from './api';
 import './index.css';
@@ -23,6 +29,7 @@ const NAV = [
   ['Action Brief', Zap],
 ];
 const COLORS = ['#2F80ED', '#12B886', '#F59F00', '#E03131', '#7048E8', '#0CA678'];
+<<<<<<< HEAD
 const defaultFilters = {
   start_date: { label: 'From', value: null },
   end_date: { label: 'To', value: null },
@@ -31,6 +38,14 @@ const defaultFilters = {
   device_type: { label: 'Device Type', value: 'All' },
   age_group: { label: 'Age Group', value: 'All' }
 };
+=======
+const defaultFilters = { start_date:  { label: 'From', value: null },
+  end_date:    { label: 'To', value: null },
+  loan_type:   { label: 'Loan Type', value: 'All' },
+  city:        { label: 'City', value: 'All' },
+  device_type: { label: 'Device Type', value: 'All' },
+  age_group:   { label: 'Age Group', value: 'All' } };
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
 
 function exportChart(id, filename) {
   const node = document.getElementById(id);
@@ -54,6 +69,7 @@ function exportChart(id, filename) {
   image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(xml)}`;
 }
 
+<<<<<<< HEAD
 // ─── OnboardIQ Brand Logo SVG ─────────────────────────────────────────────────
 function Logo({ size = 40, variant = 'color' }) {
   const isDark = variant === 'white';
@@ -104,12 +120,17 @@ function Wordmark({ size = 40, textColor = 'text-white', showTagline = false }) 
 }
 
 // ─── Landing Page (Login + Marketing) ────────────────────────────────────────
+=======
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
 function Login({ onLogin }) {
   const [email, setEmail] = useState('admin@onboardiq.io');
   const [password, setPassword] = useState('OnboardIQ@2026');
   const [error, setError] = useState('');
+<<<<<<< HEAD
   const [menuOpen, setMenuOpen] = useState(false);
 
+=======
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
   async function submit(e) {
     e.preventDefault();
     setError('');
@@ -121,6 +142,7 @@ function Login({ onLogin }) {
       setError('Invalid credentials');
     }
   }
+<<<<<<< HEAD
 
   function scrollTo(id) {
     if (id === 'home') {
@@ -496,11 +518,45 @@ function Login({ onLogin }) {
           </p>
         </div>
       </footer>
+=======
+  return (
+    <div className="min-h-screen bg-navy text-white">
+      <div className="mx-auto grid min-h-screen max-w-6xl grid-cols-1 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="flex flex-col justify-center px-8 py-12">
+          <div className="mb-8 flex items-center gap-3">
+            <div className="grid h-11 w-11 place-items-center rounded-lg bg-accent"><ShieldCheck /></div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-normal">OnboardIQ</h1>
+              <p className="text-blue-100">Decision intelligence for digital onboarding</p>
+            </div>
+          </div>
+          <h2 className="max-w-2xl text-5xl font-bold leading-tight tracking-normal">Detect abandonment, explain friction, and estimate the business value of fixing it.</h2>
+          <div className="mt-10 grid max-w-2xl grid-cols-1 gap-4 md:grid-cols-3">
+            {['Root-cause scoring', 'Recommendation engine', 'Impact simulator'].map((item) => (
+              <div key={item} className="rounded-lg border border-white/15 bg-white/8 p-4 text-sm text-blue-50">{item}</div>
+            ))}
+          </div>
+        </section>
+        <section className="flex items-center px-8 py-12">
+          <form onSubmit={submit} className="w-full rounded-lg bg-white p-7 text-ink shadow-soft">
+            <h2 className="text-2xl font-bold">Sign in</h2>
+            <p className="mt-1 text-sm text-slate-500">Demo: admin@onboardiq.io / OnboardIQ@2026</p>
+            <label className="mt-6 block text-sm font-semibold">Email</label>
+            <input className="field mt-2 w-full" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <label className="mt-4 block text-sm font-semibold">Password</label>
+            <input className="field mt-2 w-full" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+            <button className="btn btn-primary mt-6 w-full" type="submit">Enter platform</button>
+          </form>
+        </section>
+      </div>
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
     </div>
   );
 }
 
 function Shell({ user, onLogout, children, active, setActive }) {
+<<<<<<< HEAD
   const [isOpen, setIsOpen] = useState(() => window.innerWidth >= 1024);
 
   return (
@@ -549,10 +605,24 @@ function Shell({ user, onLogout, children, active, setActive }) {
             >
               <Icon size={17} />
               {label}
+=======
+  return (
+    <div className="flex min-h-screen">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 bg-navy text-white lg:block">
+        <div className="flex h-20 items-center gap-3 px-6">
+          <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent"><Gauge size={21} /></div>
+          <div><div className="text-xl font-bold">OnboardIQ</div><div className="text-xs text-blue-100">Fintech Journey Intelligence</div></div>
+        </div>
+        <nav className="space-y-1 px-3">
+          {NAV.map(([label, Icon]) => (
+            <button key={label} onClick={() => setActive(label)} className={`flex w-full items-center gap-3 rounded-md px-3 py-3 text-left text-sm transition ${active === label ? 'bg-white text-navy' : 'text-blue-100 hover:bg-white/10 hover:text-white'}`}>
+              <Icon size={18} /> {label}
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
             </button>
           ))}
         </nav>
       </aside>
+<<<<<<< HEAD
 
       <main className={`min-w-0 flex-1 transition-all duration-300 ease-in-out ${isOpen ? 'lg:pl-72' : 'lg:pl-0'}`}>
         <header className="sticky top-0 z-10 flex min-h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-5 backdrop-blur shadow-sm">
@@ -590,6 +660,19 @@ function Shell({ user, onLogout, children, active, setActive }) {
           </div>
         </header>
 
+=======
+      <main className="min-w-0 flex-1 lg:pl-72">
+        <header className="sticky top-0 z-10 flex min-h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-5 backdrop-blur">
+          <div>
+            <h1 className="text-xl font-bold text-ink">{active}</h1>
+            <p className="text-xs text-slate-500">From onboarding data to decisions, not just charts.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden text-right sm:block"><div className="text-sm font-semibold">{user?.name}</div><div className="text-xs text-slate-500">{user?.role}</div></div>
+            <button className="btn btn-secondary" onClick={onLogout}><LogOut size={16} /> Logout</button>
+          </div>
+        </header>
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
         <div className="p-4 lg:p-6">{children}</div>
       </main>
     </div>
@@ -608,7 +691,11 @@ function FilterBar({ metadata, filters, setFilters, onRefresh }) {
   };
 
   return (
+<<<<<<< HEAD
     <div className="mb-5 grid grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-soft lg:grid-cols-7">
+=======
+    <div className="mb-5 grid grid-cols-2 gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-soft lg:grid-cols-7">
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
 
       <label>
         <span className="mb-1 block text-xs font-semibold text-slate-500">
@@ -663,9 +750,17 @@ function FilterBar({ metadata, filters, setFilters, onRefresh }) {
       />
       <div className="flex items-end">
         <button className="btn btn-primary h-[44px] w-full" onClick={onRefresh}>
+<<<<<<< HEAD
           Apply
         </button>
       </div>
+=======
+       Apply
+      </button>
+      </div>
+      
+
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
     </div>
   );
 }
@@ -705,7 +800,11 @@ function Select({ label, value, values = [], onChange }) {
 function Card({ label, value, icon: Icon, tone = 'blue' }) {
   const tones = { blue: 'bg-blue-50 text-blue-700', green: 'bg-emerald-50 text-emerald-700', amber: 'bg-amber-50 text-amber-700', red: 'bg-red-50 text-red-700' };
   return (
+<<<<<<< HEAD
     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-soft">
+=======
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-slate-500">{label}</span>
         <span className={`grid h-9 w-9 place-items-center rounded-md ${tones[tone]}`}><Icon size={18} /></span>
@@ -742,9 +841,15 @@ function FilteredOut({ dimension, value }) {
 function Dashboard({ data, filters }) {
   if (!data) return <Loading />;
   const { kpis, charts } = data;
+<<<<<<< HEAD
   const deviceActive = filters.device_type.value && filters.device_type.value !== 'All';
   const ageActive = filters.age_group.value && filters.age_group.value !== 'All';
   const loanActive = filters.loan_type.value && filters.loan_type.value !== 'All';
+=======
+  const deviceActive  = filters.device_type?.value && filters.device_type.value !== 'All';
+  const ageActive     = filters.age_group?.value   && filters.age_group.value   !== 'All';
+  const loanActive    = filters.loan_type?.value   && filters.loan_type.value   !== 'All';
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -762,6 +867,7 @@ function Dashboard({ data, filters }) {
           <ResponsiveContainer><BarChart data={charts.dropoff}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="step" tick={{ fontSize: 11 }} /><YAxis /><Tooltip /><Bar dataKey="dropoffs" fill="#E03131" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
         </ChartBox>
         {deviceActive
+<<<<<<< HEAD
           ? <FilteredOut dimension="Device" value={filters.device_type} />
           : <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
             <ResponsiveContainer><PieChart><Pie data={charts.completion_by_device} dataKey="completion_rate" nameKey="device_type" outerRadius={105} label>{charts.completion_by_device.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer>
@@ -776,6 +882,22 @@ function Dashboard({ data, filters }) {
           : <ChartBox id="loan" title="Completion by Loan Type" filters={filters}>
             <ResponsiveContainer><BarChart data={charts.completion_by_loan}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="loan_type" tick={{ fontSize: 11 }} /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#0CA678" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
           </ChartBox>}
+=======
+          ? <FilteredOut dimension="Device" value={filters.device_type.value} />
+          : <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
+              <ResponsiveContainer><PieChart><Pie data={charts.completion_by_device} dataKey="completion_rate" nameKey="device_type" outerRadius={105} label>{charts.completion_by_device.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer>
+            </ChartBox>}
+        {ageActive
+          ? <FilteredOut dimension="Age Group" value={filters.age_group.value} />
+          : <ChartBox id="age" title="Completion by Age Group" filters={filters}>
+              <ResponsiveContainer><BarChart data={charts.completion_by_age}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="age_group" /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#7048E8" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
+            </ChartBox>}
+        {loanActive
+          ? <FilteredOut dimension="Loan Type" value={filters.loan_type.value} />
+          : <ChartBox id="loan" title="Completion by Loan Type" filters={filters}>
+              <ResponsiveContainer><BarChart data={charts.completion_by_loan}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="loan_type" tick={{ fontSize: 11 }} /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#0CA678" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
+            </ChartBox>}
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
         <ChartBox id="daily" title="Daily Trend" filters={filters}>
           <ResponsiveContainer><LineChart data={charts.daily_trend}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" tick={{ fontSize: 10 }} /><YAxis domain={[0, 100]} /><Tooltip /><Line type="monotone" dataKey="completion_rate" stroke="#2F80ED" strokeWidth={2} dot={false} /></LineChart></ResponsiveContainer>
         </ChartBox>
@@ -840,13 +962,21 @@ function Segmentation({ filters }) {
 
 function RootCauses({ filters }) {
   const [data, setData] = useState([]);
+<<<<<<< HEAD
   useEffect(() => { api('/root-causes', { method: 'POST', body: JSON.stringify(buildApiFilters(filters)) }).then((d) => setData(d.causes)); }, [filters]);
+=======
+  useEffect(() => { api('/root-causes', { method: 'POST',body: JSON.stringify(buildApiFilters(filters)) }).then((d) => setData(d.causes)); }, [filters]);
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
   return <DecisionList title="Root Cause Analysis" items={data} mode="cause" exportKind="root_causes" filters={filters} />;
 }
 
 function Recommendations({ filters }) {
   const [data, setData] = useState([]);
+<<<<<<< HEAD
   useEffect(() => { api('/recommendations', { method: 'POST', body: JSON.stringify(buildApiFilters(filters)) }).then((d) => setData(d.recommendations)); }, [filters]);
+=======
+  useEffect(() => { api('/recommendations', { method: 'POST',body: JSON.stringify(buildApiFilters(filters)) }).then((d) => setData(d.recommendations)); }, [filters]);
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
   return <DecisionList title="Recommended Product Changes" items={data} mode="recommendation" />;
 }
 
@@ -930,7 +1060,11 @@ function DataTable({ rows, columns }) {
 }
 
 function Loading() {
+<<<<<<< HEAD
   return <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">Loading decision intelligence...</div>;
+=======
+  return <div className="rounded-lg border border-slate-200 bg-white p-8 text-center text-slate-500">Loading decision intelligence...</div>;
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
 }
 
 // ─── Action Brief ────────────────────────────────────────────────────────────
@@ -939,6 +1073,10 @@ function HealthScore({ cards, topFindings }) {
   if (!cards || cards.length === 0) return null;
   const highCount = cards.filter((c) => c.priority === 'High').length;
   const avgConfidence = Math.round(cards.reduce((s, c) => s + c.confidence, 0) / cards.length);
+<<<<<<< HEAD
+=======
+  // Score: penalise for high-priority cards, reward confidence
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
   const raw = Math.max(10, 100 - highCount * 14 - (cards.length - highCount) * 5 + (avgConfidence - 80));
   const score = Math.min(99, Math.round(raw));
   const grade = score >= 80 ? 'A' : score >= 65 ? 'B' : score >= 50 ? 'C' : 'D';
@@ -958,8 +1096,14 @@ function HealthScore({ cards, topFindings }) {
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {cards.map((c) => (
+<<<<<<< HEAD
             <span key={c.kind} className={`rounded-full px-3 py-0.5 text-xs font-semibold ${c.priority === 'High' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
               }`}>{c.kind.replaceAll('_', ' ')}</span>
+=======
+            <span key={c.kind} className={`rounded-full px-3 py-0.5 text-xs font-semibold ${
+              c.priority === 'High' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
+            }`}>{c.kind.replaceAll('_', ' ')}</span>
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
           ))}
         </div>
       </div>
@@ -1040,6 +1184,10 @@ function ActionCard({ card }) {
 
 function CombinedImpact({ cards }) {
   if (!cards || cards.length === 0) return null;
+<<<<<<< HEAD
+=======
+  // Parse "+X.X% completion, ~Y additional applications, ~Rs Z revenue" from each card
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
   let totalApps = 0;
   let totalRevenue = 0;
   let totalPts = 0;
@@ -1090,8 +1238,18 @@ function ActionBrief({ filters }) {
 
   return (
     <div className="space-y-5">
+<<<<<<< HEAD
       <HealthScore cards={cards} topFindings={findings} />
       <TopInsights findings={findings} />
+=======
+      {/* 1. Funnel Health Score */}
+      <HealthScore cards={cards} topFindings={findings} />
+
+      {/* 2. Top Insights */}
+      <TopInsights findings={findings} />
+
+      {/* 3. Action Cards — the 4-question executive cards */}
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
       {cards.length > 0 && (
         <section className="chart-card">
           <div className="mb-4 flex items-center gap-2">
@@ -1106,6 +1264,11 @@ function ActionBrief({ filters }) {
           </div>
         </section>
       )}
+<<<<<<< HEAD
+=======
+
+      {/* 4. Combined Impact Estimate */}
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
       <CombinedImpact cards={cards} />
     </div>
   );
@@ -1124,8 +1287,13 @@ function App() {
   const [user, setUser] = useState(null);
   const [active, setActive] = useState('Dashboard');
   const [metadata, setMetadata] = useState({});
+<<<<<<< HEAD
   const [filters, setFilters] = useState(defaultFilters);
   const [appliedFilters, setAppliedFilters] = useState(defaultFilters);
+=======
+  const [filters, setFilters] = useState(defaultFilters);          // live UI state
+  const [appliedFilters, setAppliedFilters] = useState(defaultFilters); // sent to APIs on Apply
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
   const [dashboard, setDashboard] = useState(null);
 
   useEffect(() => {
@@ -1137,16 +1305,38 @@ function App() {
     api('/metadata').then((m) => {
       setMetadata(m);
       const dateRange = {
+<<<<<<< HEAD
         start_date: { label: 'From', value: m.date_min },
         end_date: { label: 'To', value: m.date_max },
       };
       setFilters((f) => ({ ...f, ...dateRange }));
       setAppliedFilters((f) => ({ ...f, ...dateRange }));
+=======
+  start_date: { label: 'From', value: m.date_min },
+  end_date: { label: 'To', value: m.date_max },
+};
+
+setFilters((f) => ({
+  ...f,
+  ...dateRange,
+}));
+
+setAppliedFilters((f) => ({
+  ...f,
+  ...dateRange,
+}));
+      // setFilters((f) => ({ ...f, ...dateRange }));
+      // setAppliedFilters((f) => ({ ...f, ...dateRange })); // auto-apply date range on load
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
     });
   }, [user]);
   useEffect(() => {
     if (!user || !appliedFilters.start_date.value) return;
+<<<<<<< HEAD
     const payload = buildApiFilters(appliedFilters);
+=======
+    const payload = buildApiFilters(appliedFilters)
+>>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
     api('/analytics/dashboard', { method: 'POST', body: JSON.stringify(payload) }).then(setDashboard);
   }, [user, appliedFilters]);
 
