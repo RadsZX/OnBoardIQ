@@ -1,21 +1,14 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line,
   PieChart, Pie, Cell, AreaChart, Area,
 } from 'recharts';
 import {
-<<<<<<< HEAD
   Activity, AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, Download, FileDown, Gauge,
   LayoutDashboard, LogOut, Search, ShieldCheck, SlidersHorizontal,
   UserRoundCheck, Users, Zap, TrendingUp, Lightbulb, BarChart2,
-  Brain, ArrowRight, CheckCircle, Mail, Phone, MapPin, Globe,
-  Target, LineChart as LineChartIcon, Layers, Clock, Lock,
-=======
-  Activity, AlertTriangle, ChevronDown, Download, FileDown, Gauge,
-  LayoutDashboard, LogOut, Search, ShieldCheck, SlidersHorizontal,
-  UserRoundCheck, Users, Zap, TrendingUp, Lightbulb, BarChart2,
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
+  Brain, ArrowRight, CheckCircle, Mail, Phone, MapPin, Target, LineChart as LineChartIcon, Lock,
 } from 'lucide-react';
 import { api, clearToken, downloadCsv, getToken, setToken } from './api';
 import './index.css';
@@ -29,23 +22,28 @@ const NAV = [
   ['Action Brief', Zap],
 ];
 const COLORS = ['#2F80ED', '#12B886', '#F59F00', '#E03131', '#7048E8', '#0CA678'];
-<<<<<<< HEAD
-const defaultFilters = {
-  start_date: { label: 'From', value: null },
-  end_date: { label: 'To', value: null },
-  loan_type: { label: 'Loan Type', value: 'All' },
-  city: { label: 'City', value: 'All' },
-  device_type: { label: 'Device Type', value: 'All' },
-  age_group: { label: 'Age Group', value: 'All' }
-};
-=======
-const defaultFilters = { start_date:  { label: 'From', value: null },
+
+const defaultFilters = { 
+  start_date:  { label: 'From', value: null },
   end_date:    { label: 'To', value: null },
   loan_type:   { label: 'Loan Type', value: 'All' },
   city:        { label: 'City', value: 'All' },
   device_type: { label: 'Device Type', value: 'All' },
-  age_group:   { label: 'Age Group', value: 'All' } };
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
+  age_group:   { label: 'Age Group', value: 'All' } 
+};
+
+// Safely extracts values for the API requests
+function buildApiFilters(filters) {
+  if (!filters) return {};
+  return {
+    start_date: filters.start_date?.value || null,
+    end_date: filters.end_date?.value || null,
+    loan_type: filters.loan_type?.value || 'All',
+    city: filters.city?.value || 'All',
+    device_type: filters.device_type?.value || 'All',
+    age_group: filters.age_group?.value || 'All',
+  };
+}
 
 function exportChart(id, filename) {
   const node = document.getElementById(id);
@@ -69,68 +67,43 @@ function exportChart(id, filename) {
   image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(xml)}`;
 }
 
-<<<<<<< HEAD
-// ─── OnboardIQ Brand Logo SVG ─────────────────────────────────────────────────
+// ─── Branding ─────────────────────────────────────────────────────────────────
 function Logo({ size = 40, variant = 'color' }) {
   const isDark = variant === 'white';
   const primary = isDark ? '#FFFFFF' : '#2F80ED';
   const secondary = isDark ? 'rgba(255,255,255,0.7)' : '#071B34';
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Outer rounded square */}
       <rect width="48" height="48" rx="12" fill={secondary} />
-      {/* Central bar chart abstraction — data visualization */}
       <rect x="10" y="28" width="5" height="10" rx="1.5" fill={primary} opacity="0.5" />
       <rect x="18" y="20" width="5" height="18" rx="1.5" fill={primary} opacity="0.75" />
       <rect x="26" y="14" width="5" height="24" rx="1.5" fill={primary} />
       <rect x="34" y="22" width="5" height="16" rx="1.5" fill={primary} opacity="0.65" />
-      {/* Trend line overlay */}
-      <polyline
-        points="12.5,24 20.5,18 28.5,12 36.5,20"
-        stroke={primary}
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-        opacity="0.9"
-      />
-      {/* Dot on the trend */}
+      <polyline points="12.5,24 20.5,18 28.5,12 36.5,20" stroke={primary} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.9" />
       <circle cx="28.5" cy="12" r="2.2" fill={primary} />
     </svg>
   );
 }
 
-// ─── Wordmark (Logo + Text) ───────────────────────────────────────────────────
 function Wordmark({ size = 40, textColor = 'text-white', showTagline = false }) {
   return (
     <div className="flex items-center gap-3">
       <Logo size={size} variant="color" />
       <div>
-        <div className={`text-xl font-bold tracking-tight leading-none ${textColor}`}>
-          OnboardIQ
-        </div>
-        {showTagline && (
-          <div className="text-xs text-blue-300 font-medium tracking-wide mt-0.5">
-            Fintech Journey Intelligence
-          </div>
-        )}
+        <div className={`text-xl font-bold tracking-tight leading-none ${textColor}`}>OnboardIQ</div>
+        {showTagline && <div className="text-xs text-blue-300 font-medium tracking-wide mt-0.5">Fintech Journey Intelligence</div>}
       </div>
     </div>
   );
 }
 
-// ─── Landing Page (Login + Marketing) ────────────────────────────────────────
-=======
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
+// ─── Landing Page ────────────────────────────────────────────────────────────
 function Login({ onLogin }) {
   const [email, setEmail] = useState('admin@onboardiq.io');
   const [password, setPassword] = useState('OnboardIQ@2026');
   const [error, setError] = useState('');
-<<<<<<< HEAD
   const [menuOpen, setMenuOpen] = useState(false);
 
-=======
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
   async function submit(e) {
     e.preventDefault();
     setError('');
@@ -142,625 +115,154 @@ function Login({ onLogin }) {
       setError('Invalid credentials');
     }
   }
-<<<<<<< HEAD
 
   function scrollTo(id) {
-    if (id === 'home') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (id === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
+    else document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setMenuOpen(false);
   }
 
-  const features = [
-    {
-      icon: Target,
-      title: 'Drop-off Detection',
-      description: 'Identify exactly where applicants abandon the onboarding funnel with step-level precision. Pinpoint friction before it costs you revenue.',
-      color: 'blue',
-    },
-    {
-      icon: Brain,
-      title: 'Root-Cause AI Scoring',
-      description: 'Our ML engine surfaces the real reasons behind every exit - from OTP timeouts to confusing KYC flows - ranked by business impact.',
-      color: 'purple',
-    },
-    {
-      icon: LineChartIcon,
-      title: 'Journey Explorer',
-      description: 'Replay any customer\'s onboarding journey step-by-step. Understand individual friction points and error patterns in full detail.',
-      color: 'emerald',
-    },
-    {
-      icon: Users,
-      title: 'Customer Segmentation',
-      description: 'Slice performance by age group, income, device, loan type, and employment status to find which segments need the most attention.',
-      color: 'amber',
-    },
-    {
-      icon: SlidersHorizontal,
-      title: 'Business Impact Simulator',
-      description: 'Model the revenue lift from proposed fixes before you build them. Justify engineering investment with data-backed projections.',
-      color: 'red',
-    },
-    {
-      icon: Zap,
-      title: 'Action Brief & Insights',
-      description: 'Auto-generated executive summaries with prioritized action cards. From data to decision in seconds, not days.',
-      color: 'mint',
-    },
-  ];
-
-  const stats = [
-    { value: '94%', label: 'Accuracy in drop-off prediction' },
-    { value: '3.2×', label: 'Faster time-to-insight vs manual analysis' },
-    { value: '₹18L+', label: 'Average monthly revenue recovered' },
-    { value: '60+', label: 'Onboarding friction patterns tracked' },
-  ];
-
-  const colorMap = {
-    blue: { bg: 'bg-blue-50', icon: 'text-blue-600', border: 'border-blue-100' },
-    purple: { bg: 'bg-purple-50', icon: 'text-purple-600', border: 'border-purple-100' },
-    emerald: { bg: 'bg-emerald-50', icon: 'text-emerald-600', border: 'border-emerald-100' },
-    amber: { bg: 'bg-amber-50', icon: 'text-amber-600', border: 'border-amber-100' },
-    red: { bg: 'bg-red-50', icon: 'text-red-600', border: 'border-red-100' },
-    mint: { bg: 'bg-teal-50', icon: 'text-teal-600', border: 'border-teal-100' },
-  };
-
   return (
     <div className="min-h-screen bg-[#F5F7FB] font-sans">
-      {/* ── Sticky Navbar ─────────────────────────────────── */}
       <nav id="home" className="sticky top-0 z-50 bg-[#0C2E58]/95 backdrop-blur border-b border-white/10 shadow-lg">
         <div className="mx-auto max-w-7xl px-6 flex items-center justify-between h-16">
-          <Wordmark size={36} textColor="text-white" showTagline={false} />
-
-          {/* Desktop nav */}
+          <Wordmark size={36} textColor="text-white" />
           <div className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => scrollTo('home')}
-              className="text-sm font-semibold text-blue-200 hover:text-white transition-colors"
-            >
-              Home
-            </button>
-            <button
-              onClick={() => scrollTo('about')}
-              className="text-sm font-semibold text-blue-200 hover:text-white transition-colors"
-            >
-              About Us
-            </button>
-            <button
-              onClick={() => scrollTo('contact')}
-              className="text-sm font-semibold text-blue-200 hover:text-white transition-colors"
-            >
-              Contact Us
-            </button>
-            <button
-              onClick={() => scrollTo('login-section')}
-              className="ml-2 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 transition-colors"
-            >
-              Sign In
-            </button>
+            <button onClick={() => scrollTo('home')} className="text-sm font-semibold text-blue-200 hover:text-white transition-colors">Home</button>
+            <button onClick={() => scrollTo('about')} className="text-sm font-semibold text-blue-200 hover:text-white transition-colors">About Us</button>
+            <button onClick={() => scrollTo('contact')} className="text-sm font-semibold text-blue-200 hover:text-white transition-colors">Contact Us</button>
+            <button onClick={() => scrollTo('login-section')} className="ml-2 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 transition-colors">Sign In</button>
           </div>
-
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden flex flex-col gap-1.5 p-1"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
+          <button className="md:hidden flex flex-col gap-1.5 p-1" onClick={() => setMenuOpen(!menuOpen)}>
             <span className={`block w-5 h-0.5 bg-white transition-all ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
             <span className={`block w-5 h-0.5 bg-white transition-all ${menuOpen ? 'opacity-0' : ''}`} />
             <span className={`block w-5 h-0.5 bg-white transition-all ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
           </button>
         </div>
-
-        {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden border-t border-white/10 bg-[#071B34] px-6 py-4 space-y-3">
             {[['Home', 'home'], ['About Us', 'about'], ['Contact Us', 'contact'], ['Sign In', 'login-section']].map(([label, id]) => (
-              <button
-                key={id}
-                onClick={() => scrollTo(id)}
-                className="block w-full text-left text-sm font-semibold text-blue-100 hover:text-white py-2 transition-colors"
-              >
-                {label}
-              </button>
+              <button key={id} onClick={() => scrollTo(id)} className="block w-full text-left text-sm font-semibold text-blue-100 hover:text-white py-2 transition-colors">{label}</button>
             ))}
           </div>
         )}
       </nav>
 
-      {/* ── Hero Section (Home) ─────────────────────────── */}
       <section className="relative overflow-hidden bg-[#071B34] pt-20 pb-24 lg:pt-28 lg:pb-32">
-        {/* Background gradient mesh */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-blue-600/10 blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-purple-600/10 blur-3xl" />
         </div>
-
         <div className="relative mx-auto max-w-7xl px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left: Hero copy */}
           <div>
-
             <h1 className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-tight tracking-tight">
-              Turn Onboarding{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
-                Drop-offs
-              </span>{' '}
-              Into Revenue
+              Turn Onboarding <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Drop-offs</span> Into Revenue
             </h1>
-
             <p className="mt-5 text-lg text-blue-100 leading-relaxed max-w-lg">
               OnboardIQ uses AI to detect friction, explain root causes, and simulate the business value of fixing them - before you write a single line of code.
             </p>
-
-            {/* Tagline */}
-            <p className="mt-3 text-sm font-semibold text-blue-300 tracking-wide italic">
-              "From onboarding data to decisions - not just charts."
-            </p>
-
             <div className="mt-8 flex flex-wrap gap-4">
-              <button
-                onClick={() => scrollTo('login-section')}
-                className="inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-bold text-white hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/40"
-              >
+              <button onClick={() => scrollTo('login-section')} className="inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-bold text-white hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/40">
                 Get Started <ArrowRight size={16} />
               </button>
-              <button
-                onClick={() => scrollTo('about')}
-                className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/8 transition-all"
-              >
-                Explore Features
-              </button>
-            </div>
-
-            {/* Trust badges */}
-            <div className="mt-10 flex flex-wrap gap-4">
-              {['Bank-grade Security', 'Real-time Analytics', 'Zero-code Setup'].map((badge) => (
-                <span key={badge} className="flex items-center gap-1.5 text-xs font-semibold text-blue-200">
-                  <CheckCircle size={13} className="text-emerald-400" />
-                  {badge}
-                </span>
-              ))}
             </div>
           </div>
-
-          {/* Right: Login card */}
           <div id="login-section" className="w-full">
             <form onSubmit={submit} className="rounded-2xl bg-white p-8 text-[#12233D] shadow-2xl border border-slate-100">
               <div className="flex items-center gap-3 mb-6">
                 <Logo size={36} variant="color" />
-                <div>
-                  <h2 className="text-xl font-bold">Sign in to OnboardIQ</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">Decision intelligence platform</p>
-                </div>
+                <div><h2 className="text-xl font-bold">Sign in to OnboardIQ</h2><p className="text-xs text-slate-400 mt-0.5">Decision intelligence platform</p></div>
               </div>
-
-              <p className="mb-5 text-xs text-slate-400 bg-slate-50 border border-slate-200 rounded-md px-3 py-2">
-                Demo credentials: <strong>admin@onboardiq.io</strong> / <strong>OnboardIQ@2026</strong>
-              </p>
-
+              <p className="mb-5 text-xs text-slate-400 bg-slate-50 border border-slate-200 rounded-md px-3 py-2">Demo credentials: <strong>admin@onboardiq.io</strong> / <strong>OnboardIQ@2026</strong></p>
               <label className="block text-sm font-semibold text-slate-700 mb-1">Email</label>
-              <input
-                className="field w-full"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
-              />
-
+              <input className="field w-full" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               <label className="mt-4 block text-sm font-semibold text-slate-700 mb-1">Password</label>
-              <input
-                className="field w-full"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
-              />
-
-              {error && (
-                <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">
-                  {error}
-                </p>
-              )}
-
-              <button className="btn btn-primary mt-6 w-full py-3 text-base font-bold" type="submit">
-                Enter Platform
-              </button>
-
-              <div className="mt-4 flex items-center justify-center gap-4 text-xs text-slate-400">
-                <Lock size={12} />
-                <span>256-bit encrypted · SOC 2 compliant</span>
-              </div>
+              <input className="field w-full" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              {error && <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">{error}</p>}
+              <button className="btn btn-primary mt-6 w-full py-3 text-base font-bold" type="submit">Enter Platform</button>
             </form>
           </div>
         </div>
       </section>
-
-      {/* ── Stats Band ──────────────────────────────────── */}
-      <section className="bg-white border-y border-slate-200">
-        <div className="mx-auto max-w-7xl px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 divide-y md:divide-y-0 md:divide-x divide-slate-100">
-          {stats.map(({ value, label }) => (
-            <div key={label} className="text-center py-4 md:py-0">
-              <div className="text-3xl font-extrabold text-[#071B34] tracking-tight">{value}</div>
-              <div className="mt-1 text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Features / About Us ─────────────────────────── */}
-      <section id="about" className="bg-[#F5F7FB] py-20 lg:py-28">
-        <div className="mx-auto max-w-7xl px-6">
-          {/* Section heading */}
-          <div className="text-center mb-14">
-            <span className="inline-block rounded-full bg-blue-100 px-4 py-1.5 text-xs font-bold text-blue-700 uppercase tracking-widest mb-4">
-              About OnboardIQ
-            </span>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#071B34] tracking-tight">
-              Everything you need to stop losing applicants
-            </h2>
-            <p className="mt-4 text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
-              OnboardIQ is a decision intelligence platform built for fintech product teams. We transform raw onboarding event data into clear, prioritized actions that recover revenue.
-            </p>
-          </div>
-
-          {/* Feature cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {features.map(({ icon: Icon, title, description, color }) => {
-              const c = colorMap[color];
-              return (
-                <div
-                  key={title}
-                  className={`rounded-xl border ${c.border} bg-white p-6 shadow-sm hover:shadow-md transition-all group`}
-                >
-                  <div className={`w-12 h-12 rounded-xl ${c.bg} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
-                    <Icon size={22} className={c.icon} />
-                  </div>
-                  <h3 className="text-base font-bold text-[#071B34] mb-2">{title}</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Contact Section ─────────────────────────────── */}
-      <section id="contact" className="bg-white py-20 lg:py-28 border-t border-slate-200">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="text-center mb-14">
-            <span className="inline-block rounded-full bg-blue-100 px-4 py-1.5 text-xs font-bold text-blue-700 uppercase tracking-widest mb-4">
-              Contact Us
-            </span>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#071B34] tracking-tight">
-              Let's talk about your onboarding funnel
-            </h2>
-            <p className="mt-4 text-lg text-slate-500 max-w-xl mx-auto">
-              Reach out to schedule a demo, ask a question, or discuss a custom integration for your team.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-4xl mx-auto text-center mt-12">
-            {/* Email */}
-            <div className="flex flex-col items-center">
-              <div className="mb-3 text-blue-600">
-                <Mail size={24} />
-              </div>
-              <h4 className="text-base font-bold text-[#071B34] mb-1">Email</h4>
-              <p className="text-sm text-slate-500 mb-2">We respond within 24 hours</p>
-              <a
-                href="mailto:hello@onboardiq.io"
-                className="text-sm font-semibold text-black hover:text-blue-700 hover:underline transition-colors"
-              >
-                hello@onboardiq.io
-              </a>
-            </div>
-
-            {/* Phone */}
-            <div className="flex flex-col items-center">
-              <div className="mb-3 text-blue-600">
-                <Phone size={24} />
-              </div>
-              <h4 className="text-base font-bold text-[#071B34] mb-1">Phone</h4>
-              <p className="text-sm text-slate-500 mb-2">Mon–Fri, 9 AM – 6 PM IST</p>
-              <a
-                href="tel:+918000123456"
-                className="text-sm font-semibold text-black hover:text-blue-700 hover:underline transition-colors"
-              >
-                +91 80001 23456
-              </a>
-            </div>
-
-            {/* Office */}
-            <div className="flex flex-col items-center">
-              <div className="mb-3 text-blue-600">
-                <MapPin size={24} />
-              </div>
-              <h4 className="text-base font-bold text-[#071B34] mb-1">Office</h4>
-              <p className="text-sm text-slate-500 mb-2">Headquartered in India</p>
-              <span className="text-sm font-semibold text-black">
-                Bengaluru, Karnataka, IN
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Footer ──────────────────────────────────────── */}
-      <footer className="bg-[#0C2E58] text-blue-200 border-t border-white/10">
-        <div className="mx-auto max-w-7xl px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <Logo size={32} variant="color" />
-            <div>
-              <div className="font-bold text-white text-sm">OnboardIQ</div>
-              <div className="text-xs text-blue-400 mt-0.5">Fintech Journey Intelligence</div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs">
-            {[['Home', 'home'], ['About Us', 'about'], ['Contact Us', 'contact'], ['Sign In', 'login-section']].map(([label, id]) => (
-              <button
-                key={id}
-                onClick={() => {
-                  if (id === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
-                  else document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="hover:text-white transition-colors"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <p className="text-xs text-blue-400">
-            © {new Date().getFullYear()} OnboardIQ. All rights reserved.
-          </p>
-        </div>
-      </footer>
-=======
-  return (
-    <div className="min-h-screen bg-navy text-white">
-      <div className="mx-auto grid min-h-screen max-w-6xl grid-cols-1 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="flex flex-col justify-center px-8 py-12">
-          <div className="mb-8 flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-lg bg-accent"><ShieldCheck /></div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-normal">OnboardIQ</h1>
-              <p className="text-blue-100">Decision intelligence for digital onboarding</p>
-            </div>
-          </div>
-          <h2 className="max-w-2xl text-5xl font-bold leading-tight tracking-normal">Detect abandonment, explain friction, and estimate the business value of fixing it.</h2>
-          <div className="mt-10 grid max-w-2xl grid-cols-1 gap-4 md:grid-cols-3">
-            {['Root-cause scoring', 'Recommendation engine', 'Impact simulator'].map((item) => (
-              <div key={item} className="rounded-lg border border-white/15 bg-white/8 p-4 text-sm text-blue-50">{item}</div>
-            ))}
-          </div>
-        </section>
-        <section className="flex items-center px-8 py-12">
-          <form onSubmit={submit} className="w-full rounded-lg bg-white p-7 text-ink shadow-soft">
-            <h2 className="text-2xl font-bold">Sign in</h2>
-            <p className="mt-1 text-sm text-slate-500">Demo: admin@onboardiq.io / OnboardIQ@2026</p>
-            <label className="mt-6 block text-sm font-semibold">Email</label>
-            <input className="field mt-2 w-full" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <label className="mt-4 block text-sm font-semibold">Password</label>
-            <input className="field mt-2 w-full" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-            {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-            <button className="btn btn-primary mt-6 w-full" type="submit">Enter platform</button>
-          </form>
-        </section>
-      </div>
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
     </div>
   );
 }
 
+// ─── Shell / Layout ──────────────────────────────────────────────────────────
 function Shell({ user, onLogout, children, active, setActive }) {
-<<<<<<< HEAD
   const [isOpen, setIsOpen] = useState(() => window.innerWidth >= 1024);
 
   return (
-    <div className="flex min-h-screen relative overflow-x-hidden">
-      {/* Backdrop overlay for mobile screen drawer */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-10 bg-black/40 lg:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
+    <div className="flex min-h-screen relative overflow-x-hidden bg-[#F5F7FB]">
+      {isOpen && <div className="fixed inset-0 z-10 bg-black/40 lg:hidden" onClick={() => setIsOpen(false)} />}
 
       <aside className={`fixed inset-y-0 left-0 z-20 flex w-72 bg-[#071B34] text-white flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        {/* Sidebar header with Logo and collapse button */}
         <div className="flex h-20 items-center justify-between px-6 border-b border-white/10">
           <div className="flex items-center gap-3">
             <Logo size={38} variant="color" />
-            <div>
-              <div className="text-base font-bold leading-tight">OnboardIQ</div>
-              <div className="text-xs text-blue-300 mt-0.5">Journey Intelligence</div>
-            </div>
+            <div><div className="text-base font-bold leading-tight">OnboardIQ</div><div className="text-xs text-blue-300 mt-0.5">Journey Intelligence</div></div>
           </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="p-1.5 rounded-lg hover:bg-white/10 text-blue-200 hover:text-white transition-colors"
-            title="Collapse Sidebar"
-          >
-            <ChevronLeft size={20} />
-          </button>
+          <button onClick={() => setIsOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-blue-200 hover:text-white lg:hidden"><ChevronLeft size={20} /></button>
         </div>
-
         <nav className="flex-1 space-y-1 px-3 py-4">
           {NAV.map(([label, Icon]) => (
             <button
               key={label}
-              onClick={() => {
-                setActive(label);
-                if (window.innerWidth < 1024) {
-                  setIsOpen(false);
-                }
-              }}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-all ${active === label
-                ? 'bg-accent text-white shadow-sm'
-                : 'text-blue-100 hover:bg-white/10 hover:text-white'
-                }`}
+              onClick={() => { setActive(label); if (window.innerWidth < 1024) setIsOpen(false); }}
+              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-all ${active === label ? 'bg-accent text-white shadow-sm' : 'text-blue-100 hover:bg-white/10 hover:text-white'}`}
             >
-              <Icon size={17} />
-              {label}
-=======
-  return (
-    <div className="flex min-h-screen">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 bg-navy text-white lg:block">
-        <div className="flex h-20 items-center gap-3 px-6">
-          <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent"><Gauge size={21} /></div>
-          <div><div className="text-xl font-bold">OnboardIQ</div><div className="text-xs text-blue-100">Fintech Journey Intelligence</div></div>
-        </div>
-        <nav className="space-y-1 px-3">
-          {NAV.map(([label, Icon]) => (
-            <button key={label} onClick={() => setActive(label)} className={`flex w-full items-center gap-3 rounded-md px-3 py-3 text-left text-sm transition ${active === label ? 'bg-white text-navy' : 'text-blue-100 hover:bg-white/10 hover:text-white'}`}>
-              <Icon size={18} /> {label}
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
+              <Icon size={17} />{label}
             </button>
           ))}
         </nav>
       </aside>
-<<<<<<< HEAD
 
       <main className={`min-w-0 flex-1 transition-all duration-300 ease-in-out ${isOpen ? 'lg:pl-72' : 'lg:pl-0'}`}>
         <header className="sticky top-0 z-10 flex min-h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-5 backdrop-blur shadow-sm">
           <div className="flex items-center gap-3">
-            {/* Toggle button when sidebar is collapsed */}
             {!isOpen && (
-              <button
-                onClick={() => setIsOpen(true)}
-                className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-slate-800 transition-colors mr-1 flex items-center justify-center bg-white shadow-sm"
-                title="Expand Sidebar"
-              >
-                <ChevronRight size={20} />
-              </button>
+              <button onClick={() => setIsOpen(true)} className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 bg-white shadow-sm"><ChevronRight size={20} /></button>
             )}
-
-            {/* Mobile logo in header (only shown when sidebar is closed and on mobile) */}
-            <div className={`lg:hidden transition-opacity duration-200 ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-              <Logo size={30} variant="color" />
-            </div>
-
             <div>
               <h1 className="text-base font-bold text-[#12233D]">{active}</h1>
-              <p className="text-xs text-slate-400 hidden sm:block">OnboardIQ · Fintech Journey Intelligence</p>
+              <p className="text-xs text-slate-400 hidden sm:block">From onboarding data to decisions, not just charts.</p>
             </div>
           </div>
-
           <div className="flex items-center gap-3">
             <div className="hidden text-right sm:block">
               <div className="text-sm font-semibold text-[#12233D]">{user?.name}</div>
               <div className="text-xs text-slate-400">{user?.role}</div>
             </div>
-            <button className="btn btn-secondary text-xs" onClick={onLogout}>
-              <LogOut size={14} /> Logout
-            </button>
+            <button className="btn btn-secondary text-xs" onClick={onLogout}><LogOut size={14} /> Logout</button>
           </div>
         </header>
-
-=======
-      <main className="min-w-0 flex-1 lg:pl-72">
-        <header className="sticky top-0 z-10 flex min-h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-5 backdrop-blur">
-          <div>
-            <h1 className="text-xl font-bold text-ink">{active}</h1>
-            <p className="text-xs text-slate-500">From onboarding data to decisions, not just charts.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden text-right sm:block"><div className="text-sm font-semibold">{user?.name}</div><div className="text-xs text-slate-500">{user?.role}</div></div>
-            <button className="btn btn-secondary" onClick={onLogout}><LogOut size={16} /> Logout</button>
-          </div>
-        </header>
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
         <div className="p-4 lg:p-6">{children}</div>
       </main>
     </div>
   );
 }
 
+// ─── Filter Components ───────────────────────────────────────────────────────
 function FilterBar({ metadata, filters, setFilters, onRefresh }) {
   const update = (key, value) => {
-    setFilters((f) => ({
-      ...f,
-      [key]: {
-        ...f[key],
-        value: value || null,
-      },
-    }));
+    setFilters((f) => ({ ...f, [key]: { ...f[key], value: value || null } }));
   };
 
   return (
-<<<<<<< HEAD
-    <div className="mb-5 grid grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-soft lg:grid-cols-7">
-=======
-    <div className="mb-5 grid grid-cols-2 gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-soft lg:grid-cols-7">
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
-
+    <div className="mb-5 grid grid-cols-2 gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-soft lg:grid-cols-7 items-end">
       <label>
-        <span className="mb-1 block text-xs font-semibold text-slate-500">
-          {filters.start_date.label}
-        </span>
-        <input
-          className="field w-full"
-          type="date"
-          value={filters.start_date.value || ''}
-          onChange={(e) => update('start_date', e.target.value)}
-        />
+        <span className="mb-1 block text-xs font-semibold text-slate-500">{filters.start_date.label}</span>
+        <input className="field w-full" type="date" value={filters.start_date.value || ''} onChange={(e) => update('start_date', e.target.value)} />
       </label>
-
       <label>
-        <span className="mb-1 block text-xs font-semibold text-slate-500">
-          {filters.end_date.label}
-        </span>
-        <input
-          className="field w-full"
-          type="date"
-          value={filters.end_date.value || ''}
-          onChange={(e) => update('end_date', e.target.value)}
-        />
+        <span className="mb-1 block text-xs font-semibold text-slate-500">{filters.end_date.label}</span>
+        <input className="field w-full" type="date" value={filters.end_date.value || ''} onChange={(e) => update('end_date', e.target.value)} />
       </label>
-
-      <Select
-        label={filters.loan_type.label}
-        value={filters.loan_type.value}
-        values={metadata.loan_types}
-        onChange={(v) => update('loan_type', v)}
-      />
-
-      <Select
-        label={filters.city.label}
-        value={filters.city.value}
-        values={metadata.cities}
-        onChange={(v) => update('city', v)}
-      />
-
-      <Select
-        label={filters.device_type.label}
-        value={filters.device_type.value}
-        values={metadata.devices}
-        onChange={(v) => update('device_type', v)}
-      />
-
-      <Select
-        label={filters.age_group.label}
-        value={filters.age_group.value}
-        values={metadata.age_groups}
-        onChange={(v) => update('age_group', v)}
-      />
-      <div className="flex items-end">
-        <button className="btn btn-primary h-[44px] w-full" onClick={onRefresh}>
-<<<<<<< HEAD
-          Apply
-        </button>
-      </div>
-=======
-       Apply
-      </button>
-      </div>
-      
-
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
+      <Select label={filters.loan_type.label} value={filters.loan_type.value} values={metadata.loan_types} onChange={(v) => update('loan_type', v)} />
+      <Select label={filters.city.label} value={filters.city.value} values={metadata.cities} onChange={(v) => update('city', v)} />
+      <Select label={filters.device_type.label} value={filters.device_type.value} values={metadata.devices} onChange={(v) => update('device_type', v)} />
+      <Select label={filters.age_group.label} value={filters.age_group.value} values={metadata.age_groups} onChange={(v) => update('age_group', v)} />
+      <button className="btn btn-primary h-[38px] w-full" onClick={onRefresh}>Apply</button>
     </div>
   );
 }
@@ -768,43 +270,21 @@ function FilterBar({ metadata, filters, setFilters, onRefresh }) {
 function Select({ label, value, values = [], onChange }) {
   return (
     <label>
-      {label && (
-        <span className="mb-1 block text-xs font-semibold text-slate-500">
-          {label}
-        </span>
-      )}
-
+      {label && <span className="mb-1 block text-xs font-semibold text-slate-500">{label}</span>}
       <div className="relative">
-        <select
-          className="field w-full appearance-none pr-8"
-          value={value || 'All'}
-          onChange={(e) => onChange(e.target.value)}
-        >
-          {values.map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
+        <select className="field w-full appearance-none pr-8" value={value || 'All'} onChange={(e) => onChange(e.target.value)}>
+          {values.map((item) => <option key={item} value={item}>{item}</option>)}
         </select>
-
-        <ChevronDown
-          className="pointer-events-none absolute right-2 top-2.5 text-slate-400"
-          size={16}
-        />
+        <ChevronDown className="pointer-events-none absolute right-2 top-2.5 text-slate-400" size={16} />
       </div>
     </label>
   );
 }
 
-
 function Card({ label, value, icon: Icon, tone = 'blue' }) {
   const tones = { blue: 'bg-blue-50 text-blue-700', green: 'bg-emerald-50 text-emerald-700', amber: 'bg-amber-50 text-amber-700', red: 'bg-red-50 text-red-700' };
   return (
-<<<<<<< HEAD
     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-soft">
-=======
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-slate-500">{label}</span>
         <span className={`grid h-9 w-9 place-items-center rounded-md ${tones[tone]}`}><Icon size={18} /></span>
@@ -838,18 +318,20 @@ function FilteredOut({ dimension, value }) {
   );
 }
 
+// ─── Dashboard ───────────────────────────────────────────────────────────────
 function Dashboard({ data, filters }) {
   if (!data) return <Loading />;
   const { kpis, charts } = data;
-<<<<<<< HEAD
-  const deviceActive = filters.device_type.value && filters.device_type.value !== 'All';
-  const ageActive = filters.age_group.value && filters.age_group.value !== 'All';
-  const loanActive = filters.loan_type.value && filters.loan_type.value !== 'All';
-=======
-  const deviceActive  = filters.device_type?.value && filters.device_type.value !== 'All';
-  const ageActive     = filters.age_group?.value   && filters.age_group.value   !== 'All';
-  const loanActive    = filters.loan_type?.value   && filters.loan_type.value   !== 'All';
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
+  
+  // Safely extract string values
+  const deviceVal = filters.device_type?.value || 'All';
+  const ageVal = filters.age_group?.value || 'All';
+  const loanVal = filters.loan_type?.value || 'All';
+
+  const deviceActive = deviceVal !== 'All';
+  const ageActive = ageVal !== 'All';
+  const loanActive = loanVal !== 'All';
+
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -859,45 +341,40 @@ function Dashboard({ data, filters }) {
         <Card label="Highest Drop-off" value={kpis.highest_dropoff_step} icon={AlertTriangle} tone="red" />
         <Card label="Common Error" value={kpis.most_common_error} icon={ShieldCheck} />
       </div>
+      
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         <ChartBox id="funnel" title="Interactive Funnel" csvKind="funnel" filters={filters}>
           <ResponsiveContainer><AreaChart data={charts.funnel}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="step" tick={{ fontSize: 11 }} /><YAxis /><Tooltip /><Area dataKey="reached" stroke="#2F80ED" fill="#2F80ED" fillOpacity={0.18} /><Area dataKey="completed" stroke="#12B886" fill="#12B886" fillOpacity={0.25} /></AreaChart></ResponsiveContainer>
         </ChartBox>
+        
         <ChartBox id="dropoff" title="Drop-off by Step" csvKind="dropoff" filters={filters}>
           <ResponsiveContainer><BarChart data={charts.dropoff}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="step" tick={{ fontSize: 11 }} /><YAxis /><Tooltip /><Bar dataKey="dropoffs" fill="#E03131" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
         </ChartBox>
-        {deviceActive
-<<<<<<< HEAD
-          ? <FilteredOut dimension="Device" value={filters.device_type} />
-          : <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
+        
+        {deviceActive ? (
+          <FilteredOut dimension="Device" value={deviceVal} />
+        ) : (
+          <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
             <ResponsiveContainer><PieChart><Pie data={charts.completion_by_device} dataKey="completion_rate" nameKey="device_type" outerRadius={105} label>{charts.completion_by_device.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer>
-          </ChartBox>}
-        {ageActive
-          ? <FilteredOut dimension="Age Group" value={filters.age_group} />
-          : <ChartBox id="age" title="Completion by Age Group" filters={filters}>
+          </ChartBox>
+        )}
+        
+        {ageActive ? (
+          <FilteredOut dimension="Age Group" value={ageVal} />
+        ) : (
+          <ChartBox id="age" title="Completion by Age Group" filters={filters}>
             <ResponsiveContainer><BarChart data={charts.completion_by_age}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="age_group" /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#7048E8" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
-          </ChartBox>}
-        {loanActive
-          ? <FilteredOut dimension="Loan Type" value={filters.loan_type} />
-          : <ChartBox id="loan" title="Completion by Loan Type" filters={filters}>
+          </ChartBox>
+        )}
+        
+        {loanActive ? (
+          <FilteredOut dimension="Loan Type" value={loanVal} />
+        ) : (
+          <ChartBox id="loan" title="Completion by Loan Type" filters={filters}>
             <ResponsiveContainer><BarChart data={charts.completion_by_loan}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="loan_type" tick={{ fontSize: 11 }} /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#0CA678" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
-          </ChartBox>}
-=======
-          ? <FilteredOut dimension="Device" value={filters.device_type.value} />
-          : <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
-              <ResponsiveContainer><PieChart><Pie data={charts.completion_by_device} dataKey="completion_rate" nameKey="device_type" outerRadius={105} label>{charts.completion_by_device.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer>
-            </ChartBox>}
-        {ageActive
-          ? <FilteredOut dimension="Age Group" value={filters.age_group.value} />
-          : <ChartBox id="age" title="Completion by Age Group" filters={filters}>
-              <ResponsiveContainer><BarChart data={charts.completion_by_age}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="age_group" /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#7048E8" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
-            </ChartBox>}
-        {loanActive
-          ? <FilteredOut dimension="Loan Type" value={filters.loan_type.value} />
-          : <ChartBox id="loan" title="Completion by Loan Type" filters={filters}>
-              <ResponsiveContainer><BarChart data={charts.completion_by_loan}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="loan_type" tick={{ fontSize: 11 }} /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#0CA678" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
-            </ChartBox>}
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
+          </ChartBox>
+        )}
+        
         <ChartBox id="daily" title="Daily Trend" filters={filters}>
           <ResponsiveContainer><LineChart data={charts.daily_trend}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" tick={{ fontSize: 10 }} /><YAxis domain={[0, 100]} /><Tooltip /><Line type="monotone" dataKey="completion_rate" stroke="#2F80ED" strokeWidth={2} dot={false} /></LineChart></ResponsiveContainer>
         </ChartBox>
@@ -906,12 +383,11 @@ function Dashboard({ data, filters }) {
   );
 }
 
+// ─── Sub-pages ───────────────────────────────────────────────────────────────
 function JourneyExplorer({ metadata }) {
   const [customer, setCustomer] = useState(metadata.sample_customer_ids?.[0] || 'CUST-000001');
   const [journey, setJourney] = useState(null);
-  async function search() {
-    setJourney(await api(`/journey/${customer}`));
-  }
+  async function search() { setJourney(await api(`/journey/${customer}`)); }
   useEffect(() => { if (metadata.sample_customer_ids?.[0]) search(); }, [metadata.sample_customer_ids]);
   return (
     <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
@@ -962,21 +438,13 @@ function Segmentation({ filters }) {
 
 function RootCauses({ filters }) {
   const [data, setData] = useState([]);
-<<<<<<< HEAD
   useEffect(() => { api('/root-causes', { method: 'POST', body: JSON.stringify(buildApiFilters(filters)) }).then((d) => setData(d.causes)); }, [filters]);
-=======
-  useEffect(() => { api('/root-causes', { method: 'POST',body: JSON.stringify(buildApiFilters(filters)) }).then((d) => setData(d.causes)); }, [filters]);
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
   return <DecisionList title="Root Cause Analysis" items={data} mode="cause" exportKind="root_causes" filters={filters} />;
 }
 
 function Recommendations({ filters }) {
   const [data, setData] = useState([]);
-<<<<<<< HEAD
   useEffect(() => { api('/recommendations', { method: 'POST', body: JSON.stringify(buildApiFilters(filters)) }).then((d) => setData(d.recommendations)); }, [filters]);
-=======
-  useEffect(() => { api('/recommendations', { method: 'POST',body: JSON.stringify(buildApiFilters(filters)) }).then((d) => setData(d.recommendations)); }, [filters]);
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
   return <DecisionList title="Recommended Product Changes" items={data} mode="recommendation" />;
 }
 
@@ -1060,28 +528,20 @@ function DataTable({ rows, columns }) {
 }
 
 function Loading() {
-<<<<<<< HEAD
-  return <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">Loading decision intelligence...</div>;
-=======
   return <div className="rounded-lg border border-slate-200 bg-white p-8 text-center text-slate-500">Loading decision intelligence...</div>;
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
 }
 
 // ─── Action Brief ────────────────────────────────────────────────────────────
-
-function HealthScore({ cards, topFindings }) {
+function HealthScore({ cards }) {
   if (!cards || cards.length === 0) return null;
   const highCount = cards.filter((c) => c.priority === 'High').length;
   const avgConfidence = Math.round(cards.reduce((s, c) => s + c.confidence, 0) / cards.length);
-<<<<<<< HEAD
-=======
-  // Score: penalise for high-priority cards, reward confidence
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
   const raw = Math.max(10, 100 - highCount * 14 - (cards.length - highCount) * 5 + (avgConfidence - 80));
   const score = Math.min(99, Math.round(raw));
   const grade = score >= 80 ? 'A' : score >= 65 ? 'B' : score >= 50 ? 'C' : 'D';
   const color = score >= 80 ? 'text-emerald-600' : score >= 65 ? 'text-amber-500' : 'text-red-500';
   const ring = score >= 80 ? 'border-emerald-400' : score >= 65 ? 'border-amber-400' : 'border-red-400';
+  
   return (
     <section className="chart-card flex flex-wrap items-center gap-6">
       <div className={`flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-full border-4 ${ring}`}>
@@ -1096,14 +556,9 @@ function HealthScore({ cards, topFindings }) {
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {cards.map((c) => (
-<<<<<<< HEAD
-            <span key={c.kind} className={`rounded-full px-3 py-0.5 text-xs font-semibold ${c.priority === 'High' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
-              }`}>{c.kind.replaceAll('_', ' ')}</span>
-=======
-            <span key={c.kind} className={`rounded-full px-3 py-0.5 text-xs font-semibold ${
-              c.priority === 'High' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
-            }`}>{c.kind.replaceAll('_', ' ')}</span>
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
+            <span key={c.kind} className={`rounded-full px-3 py-0.5 text-xs font-semibold ${c.priority === 'High' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'}`}>
+              {c.kind.replaceAll('_', ' ')}
+            </span>
           ))}
         </div>
       </div>
@@ -1153,27 +608,19 @@ function ActionCard({ card }) {
       </div>
       <div className="grid gap-0 md:grid-cols-2">
         <div className="border-b border-slate-100 p-5 md:border-b-0 md:border-r">
-          <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-400" /> What happened?
-          </p>
+          <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400"><span className="inline-block h-1.5 w-1.5 rounded-full bg-red-400" /> What happened?</p>
           <p className="text-sm font-semibold text-slate-800">{card.finding}</p>
         </div>
         <div className="border-b border-slate-100 p-5">
-          <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" /> Why did it happen?
-          </p>
+          <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400"><span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" /> Why did it happen?</p>
           <p className="text-sm text-slate-600">{card.evidence}</p>
         </div>
         <div className="border-b border-slate-100 p-5 md:border-b-0 md:border-r md:border-t">
-          <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" /> What should we do?
-          </p>
+          <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400"><span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" /> What should we do?</p>
           <p className="text-sm text-slate-700">{card.recommendation}</p>
         </div>
         <div className="border-t border-slate-100 p-5">
-          <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" /> Expected business impact?
-          </p>
+          <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400"><span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" /> Expected business impact?</p>
           <p className="text-sm font-semibold text-emerald-700">{card.expected_impact}</p>
           <p className="mt-1 text-xs text-slate-400">{card.affected_users.toLocaleString()} affected users</p>
         </div>
@@ -1184,13 +631,7 @@ function ActionCard({ card }) {
 
 function CombinedImpact({ cards }) {
   if (!cards || cards.length === 0) return null;
-<<<<<<< HEAD
-=======
-  // Parse "+X.X% completion, ~Y additional applications, ~Rs Z revenue" from each card
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
-  let totalApps = 0;
-  let totalRevenue = 0;
-  let totalPts = 0;
+  let totalApps = 0, totalRevenue = 0, totalPts = 0;
   cards.forEach((c) => {
     const m = c.expected_impact.match(/\+([\d.]+)%.*~([\d,]+) additional.*~Rs ([\d,]+)/);
     if (m) {
@@ -1224,7 +665,6 @@ function CombinedImpact({ cards }) {
   );
 }
 
-
 function ActionBrief({ filters }) {
   const [data, setData] = useState(null);
   useEffect(() => {
@@ -1233,23 +673,12 @@ function ActionBrief({ filters }) {
   }, [filters]);
 
   if (!data) return <Loading />;
-
   const { action_cards: cards = [], top_findings: findings = [] } = data;
 
   return (
     <div className="space-y-5">
-<<<<<<< HEAD
-      <HealthScore cards={cards} topFindings={findings} />
+      <HealthScore cards={cards} />
       <TopInsights findings={findings} />
-=======
-      {/* 1. Funnel Health Score */}
-      <HealthScore cards={cards} topFindings={findings} />
-
-      {/* 2. Top Insights */}
-      <TopInsights findings={findings} />
-
-      {/* 3. Action Cards — the 4-question executive cards */}
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
       {cards.length > 0 && (
         <section className="chart-card">
           <div className="mb-4 flex items-center gap-2">
@@ -1264,79 +693,41 @@ function ActionBrief({ filters }) {
           </div>
         </section>
       )}
-<<<<<<< HEAD
-=======
-
-      {/* 4. Combined Impact Estimate */}
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
       <CombinedImpact cards={cards} />
     </div>
   );
 }
 
-function buildApiFilters(filters) {
-  return Object.fromEntries(
-    Object.entries(filters).map(([key, filter]) => [
-      key,
-      filter.value ?? '',
-    ])
-  );
-}
-
+// ─── App Root ────────────────────────────────────────────────────────────────
 function App() {
   const [user, setUser] = useState(null);
   const [active, setActive] = useState('Dashboard');
   const [metadata, setMetadata] = useState({});
-<<<<<<< HEAD
   const [filters, setFilters] = useState(defaultFilters);
   const [appliedFilters, setAppliedFilters] = useState(defaultFilters);
-=======
-  const [filters, setFilters] = useState(defaultFilters);          // live UI state
-  const [appliedFilters, setAppliedFilters] = useState(defaultFilters); // sent to APIs on Apply
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
   const [dashboard, setDashboard] = useState(null);
 
   useEffect(() => {
     if (!getToken()) return;
     api('/auth/me').then(setUser).catch(clearToken);
   }, []);
+
   useEffect(() => {
     if (!user) return;
     api('/metadata').then((m) => {
       setMetadata(m);
       const dateRange = {
-<<<<<<< HEAD
         start_date: { label: 'From', value: m.date_min },
         end_date: { label: 'To', value: m.date_max },
       };
       setFilters((f) => ({ ...f, ...dateRange }));
       setAppliedFilters((f) => ({ ...f, ...dateRange }));
-=======
-  start_date: { label: 'From', value: m.date_min },
-  end_date: { label: 'To', value: m.date_max },
-};
-
-setFilters((f) => ({
-  ...f,
-  ...dateRange,
-}));
-
-setAppliedFilters((f) => ({
-  ...f,
-  ...dateRange,
-}));
-      // setFilters((f) => ({ ...f, ...dateRange }));
-      // setAppliedFilters((f) => ({ ...f, ...dateRange })); // auto-apply date range on load
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
     });
   }, [user]);
+
   useEffect(() => {
     if (!user || !appliedFilters.start_date.value) return;
-<<<<<<< HEAD
     const payload = buildApiFilters(appliedFilters);
-=======
-    const payload = buildApiFilters(appliedFilters)
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
     api('/analytics/dashboard', { method: 'POST', body: JSON.stringify(payload) }).then(setDashboard);
   }, [user, appliedFilters]);
 
@@ -1344,6 +735,7 @@ setAppliedFilters((f) => ({
 
   if (!user) return <Login onLogin={setUser} />;
   const logout = () => { clearToken(); setUser(null); };
+
   return (
     <Shell user={user} onLogout={logout} active={active} setActive={setActive}>
       {active !== 'Journey Explorer' && <FilterBar metadata={metadata} filters={filters} setFilters={setFilters} onRefresh={handleApply} />}
