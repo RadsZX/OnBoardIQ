@@ -21,7 +21,12 @@ const NAV = [
   ['Action Brief', Zap],
 ];
 const COLORS = ['#2F80ED', '#12B886', '#F59F00', '#E03131', '#7048E8', '#0CA678'];
-const defaultFilters = { start_date: null, end_date: null, loan_type: 'All', city: 'All', device_type: 'All', age_group: 'All' };
+const defaultFilters = { start_date:  { label: 'From', value: null },
+  end_date:    { label: 'To', value: null },
+  loan_type:   { label: 'Loan Type', value: 'All' },
+  city:        { label: 'City', value: 'All' },
+  device_type: { label: 'Device Type', value: 'All' },
+  age_group:   { label: 'Age Group', value: 'All' } };
 
 function exportChart(id, filename) {
   const node = document.getElementById(id);
@@ -129,30 +134,112 @@ function Shell({ user, onLogout, children, active, setActive }) {
 }
 
 function FilterBar({ metadata, filters, setFilters, onRefresh }) {
-  const update = (key, value) => setFilters((f) => ({ ...f, [key]: value || null }));
+  const update = (key, value) => {
+    setFilters((f) => ({
+      ...f,
+      [key]: {
+        ...f[key],
+        value: value || null,
+      },
+    }));
+  };
+
   return (
     <div className="mb-5 grid grid-cols-2 gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-soft lg:grid-cols-7">
-      <input className="field" type="date" value={filters.start_date || ''} onChange={(e) => update('start_date', e.target.value)} />
-      <input className="field" type="date" value={filters.end_date || ''} onChange={(e) => update('end_date', e.target.value)} />
-      <Select value={filters.loan_type} values={metadata.loan_types} onChange={(v) => update('loan_type', v)} />
-      <Select value={filters.city} values={metadata.cities} onChange={(v) => update('city', v)} />
-      <Select value={filters.device_type} values={metadata.devices} onChange={(v) => update('device_type', v)} />
-      <Select value={filters.age_group} values={metadata.age_groups} onChange={(v) => update('age_group', v)} />
-      <button className="btn btn-primary" onClick={onRefresh}><Activity size={16} /> Apply</button>
+
+      <label>
+        <span className="mb-1 block text-xs font-semibold text-slate-500">
+          {filters.start_date.label}
+        </span>
+        <input
+          className="field w-full"
+          type="date"
+          value={filters.start_date.value || ''}
+          onChange={(e) => update('start_date', e.target.value)}
+        />
+      </label>
+
+      <label>
+        <span className="mb-1 block text-xs font-semibold text-slate-500">
+          {filters.end_date.label}
+        </span>
+        <input
+          className="field w-full"
+          type="date"
+          value={filters.end_date.value || ''}
+          onChange={(e) => update('end_date', e.target.value)}
+        />
+      </label>
+
+      <Select
+        label={filters.loan_type.label}
+        value={filters.loan_type.value}
+        values={metadata.loan_types}
+        onChange={(v) => update('loan_type', v)}
+      />
+
+      <Select
+        label={filters.city.label}
+        value={filters.city.value}
+        values={metadata.cities}
+        onChange={(v) => update('city', v)}
+      />
+
+      <Select
+        label={filters.device_type.label}
+        value={filters.device_type.value}
+        values={metadata.devices}
+        onChange={(v) => update('device_type', v)}
+      />
+
+      <Select
+        label={filters.age_group.label}
+        value={filters.age_group.value}
+        values={metadata.age_groups}
+        onChange={(v) => update('age_group', v)}
+      />
+      <div className="flex items-end">
+        <button className="btn btn-primary h-[44px] w-full" onClick={onRefresh}>
+       Apply
+      </button>
+      </div>
+      
+
     </div>
   );
 }
 
-function Select({ value, values = [], onChange }) {
+function Select({ label, value, values = [], onChange }) {
   return (
-    <label className="relative">
-      <select className="field w-full appearance-none pr-8" value={value || 'All'} onChange={(e) => onChange(e.target.value)}>
-        {values.map((item) => <option key={item} value={item}>{item}</option>)}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-2 top-2.5 text-slate-400" size={16} />
+    <label>
+      {label && (
+        <span className="mb-1 block text-xs font-semibold text-slate-500">
+          {label}
+        </span>
+      )}
+
+      <div className="relative">
+        <select
+          className="field w-full appearance-none pr-8"
+          value={value || 'All'}
+          onChange={(e) => onChange(e.target.value)}
+        >
+          {values.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
+
+        <ChevronDown
+          className="pointer-events-none absolute right-2 top-2.5 text-slate-400"
+          size={16}
+        />
+      </div>
     </label>
   );
 }
+
 
 function Card({ label, value, icon: Icon, tone = 'blue' }) {
   const tones = { blue: 'bg-blue-50 text-blue-700', green: 'bg-emerald-50 text-emerald-700', amber: 'bg-amber-50 text-amber-700', red: 'bg-red-50 text-red-700' };
@@ -174,7 +261,7 @@ function ChartBox({ id, title, children, csvKind, filters }) {
         <h3 className="font-bold">{title}</h3>
         <div className="flex gap-2">
           <button className="btn btn-secondary px-2" onClick={() => exportChart(id, `${id}.png`)} title="Export PNG"><Download size={16} /></button>
-          {csvKind && <button className="btn btn-secondary px-2" onClick={() => downloadCsv(csvKind, filters)} title="Export CSV"><FileDown size={16} /></button>}
+          {csvKind && (<button className="btn btn-secondary px-2" onClick={() => downloadCsv(csvKind, buildApiFilters(filters))} title="Export CSV"><FileDown size={16} /></button>)}
         </div>
       </div>
       <div className="h-72">{children}</div>
@@ -194,9 +281,9 @@ function FilteredOut({ dimension, value }) {
 function Dashboard({ data, filters }) {
   if (!data) return <Loading />;
   const { kpis, charts } = data;
-  const deviceActive  = filters.device_type && filters.device_type !== 'All';
-  const ageActive     = filters.age_group   && filters.age_group   !== 'All';
-  const loanActive    = filters.loan_type   && filters.loan_type   !== 'All';
+  const deviceActive  = filters.device_type.value && filters.device_type.value !== 'All';
+  const ageActive     = filters.age_group.value   && filters.age_group.value   !== 'All';
+  const loanActive    = filters.loan_type.value   && filters.loan_type.value   !== 'All';
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -278,7 +365,7 @@ function JourneyExplorer({ metadata }) {
 function Segmentation({ filters }) {
   const [dimension, setDimension] = useState('age_group');
   const [data, setData] = useState([]);
-  useEffect(() => { api(`/segmentation/${dimension}`, { method: 'POST', body: JSON.stringify(filters) }).then((d) => setData(d.segments)); }, [dimension, filters]);
+  useEffect(() => { api(`/segmentation/${dimension}`, { method: 'POST', body: JSON.stringify(buildApiFilters(filters)) }).then((d) => setData(d.segments)); }, [dimension, filters]);
   return (
     <section className="chart-card">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -292,13 +379,13 @@ function Segmentation({ filters }) {
 
 function RootCauses({ filters }) {
   const [data, setData] = useState([]);
-  useEffect(() => { api('/root-causes', { method: 'POST', body: JSON.stringify(filters) }).then((d) => setData(d.causes)); }, [filters]);
+  useEffect(() => { api('/root-causes', { method: 'POST',body: JSON.stringify(buildApiFilters(filters)) }).then((d) => setData(d.causes)); }, [filters]);
   return <DecisionList title="Root Cause Analysis" items={data} mode="cause" exportKind="root_causes" filters={filters} />;
 }
 
 function Recommendations({ filters }) {
   const [data, setData] = useState([]);
-  useEffect(() => { api('/recommendations', { method: 'POST', body: JSON.stringify(filters) }).then((d) => setData(d.recommendations)); }, [filters]);
+  useEffect(() => { api('/recommendations', { method: 'POST',body: JSON.stringify(buildApiFilters(filters)) }).then((d) => setData(d.recommendations)); }, [filters]);
   return <DecisionList title="Recommended Product Changes" items={data} mode="recommendation" />;
 }
 
@@ -307,7 +394,7 @@ function DecisionList({ title, items, mode, exportKind, filters }) {
     <section className="chart-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-bold">{title}</h3>
-        {exportKind && <button className="btn btn-secondary" onClick={() => downloadCsv(exportKind, filters)}><FileDown size={16} /> Export CSV</button>}
+        {exportKind && (<button className="btn btn-secondary" onClick={() => downloadCsv(exportKind, buildApiFilters(filters))}><FileDown size={16} /> Export CSV</button>)}
       </div>
       <div className="grid gap-3">
         {items.map((item) => (
@@ -336,7 +423,7 @@ function Metric({ label, value }) {
 function Simulator({ filters }) {
   const [assumptions, setAssumptions] = useState({ otp_timeout_seconds: 30, auto_save: false, document_compression: false, guided_kyc: false, fallback_uploader: false, revenue_per_application: 1850 });
   const [result, setResult] = useState(null);
-  useEffect(() => { api('/simulator', { method: 'POST', body: JSON.stringify({ ...filters, ...assumptions }) }).then(setResult); }, [filters, assumptions]);
+  useEffect(() => { api('/simulator', { method: 'POST', body: JSON.stringify({ ...buildApiFilters(filters), ...assumptions }) }).then(setResult); }, [filters, assumptions]);
   const toggle = (key) => setAssumptions((a) => ({ ...a, [key]: !a[key] }));
   return (
     <div className="grid gap-5 xl:grid-cols-[420px_1fr]">
@@ -536,7 +623,7 @@ function ActionBrief({ filters }) {
   const [data, setData] = useState(null);
   useEffect(() => {
     setData(null);
-    api('/insights', { method: 'POST', body: JSON.stringify(filters) }).then(setData);
+    api('/insights', { method: 'POST', body: JSON.stringify(buildApiFilters(filters)) }).then(setData);
   }, [filters]);
 
   if (!data) return <Loading />;
@@ -573,6 +660,15 @@ function ActionBrief({ filters }) {
   );
 }
 
+function buildApiFilters(filters) {
+  return Object.fromEntries(
+    Object.entries(filters).map(([key, filter]) => [
+      key,
+      filter.value ?? '',
+    ])
+  );
+}
+
 function App() {
   const [user, setUser] = useState(null);
   const [active, setActive] = useState('Dashboard');
@@ -589,14 +685,28 @@ function App() {
     if (!user) return;
     api('/metadata').then((m) => {
       setMetadata(m);
-      const dateRange = { start_date: m.date_min, end_date: m.date_max };
-      setFilters((f) => ({ ...f, ...dateRange }));
-      setAppliedFilters((f) => ({ ...f, ...dateRange })); // auto-apply date range on load
+      const dateRange = {
+  start_date: { label: 'From', value: m.date_min },
+  end_date: { label: 'To', value: m.date_max },
+};
+
+setFilters((f) => ({
+  ...f,
+  ...dateRange,
+}));
+
+setAppliedFilters((f) => ({
+  ...f,
+  ...dateRange,
+}));
+      // setFilters((f) => ({ ...f, ...dateRange }));
+      // setAppliedFilters((f) => ({ ...f, ...dateRange })); // auto-apply date range on load
     });
   }, [user]);
   useEffect(() => {
-    if (!user || !appliedFilters.start_date) return;
-    api('/analytics/dashboard', { method: 'POST', body: JSON.stringify(appliedFilters) }).then(setDashboard);
+    if (!user || !appliedFilters.start_date.value) return;
+    const payload = buildApiFilters(appliedFilters)
+    api('/analytics/dashboard', { method: 'POST', body: JSON.stringify(payload) }).then(setDashboard);
   }, [user, appliedFilters]);
 
   const handleApply = () => setAppliedFilters({ ...filters });
