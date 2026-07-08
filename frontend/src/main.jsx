@@ -281,9 +281,9 @@ function FilteredOut({ dimension, value }) {
 function Dashboard({ data, filters }) {
   if (!data) return <Loading />;
   const { kpis, charts } = data;
-  const deviceActive  = filters.device_type.value && filters.device_type.value !== 'All';
-  const ageActive     = filters.age_group.value   && filters.age_group.value   !== 'All';
-  const loanActive    = filters.loan_type.value   && filters.loan_type.value   !== 'All';
+  const deviceActive  = filters.device_type?.value && filters.device_type.value !== 'All';
+  const ageActive     = filters.age_group?.value   && filters.age_group.value   !== 'All';
+  const loanActive    = filters.loan_type?.value   && filters.loan_type.value   !== 'All';
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -301,17 +301,17 @@ function Dashboard({ data, filters }) {
           <ResponsiveContainer><BarChart data={charts.dropoff}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="step" tick={{ fontSize: 11 }} /><YAxis /><Tooltip /><Bar dataKey="dropoffs" fill="#E03131" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
         </ChartBox>
         {deviceActive
-          ? <FilteredOut dimension="Device" value={filters.device_type} />
+          ? <FilteredOut dimension="Device" value={filters.device_type.value} />
           : <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
               <ResponsiveContainer><PieChart><Pie data={charts.completion_by_device} dataKey="completion_rate" nameKey="device_type" outerRadius={105} label>{charts.completion_by_device.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer>
             </ChartBox>}
         {ageActive
-          ? <FilteredOut dimension="Age Group" value={filters.age_group} />
+          ? <FilteredOut dimension="Age Group" value={filters.age_group.value} />
           : <ChartBox id="age" title="Completion by Age Group" filters={filters}>
               <ResponsiveContainer><BarChart data={charts.completion_by_age}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="age_group" /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#7048E8" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
             </ChartBox>}
         {loanActive
-          ? <FilteredOut dimension="Loan Type" value={filters.loan_type} />
+          ? <FilteredOut dimension="Loan Type" value={filters.loan_type.value} />
           : <ChartBox id="loan" title="Completion by Loan Type" filters={filters}>
               <ResponsiveContainer><BarChart data={charts.completion_by_loan}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="loan_type" tick={{ fontSize: 11 }} /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#0CA678" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
             </ChartBox>}
