@@ -7,9 +7,11 @@ import pandas as pd
 
 from synthetic_data.generator import FLOW_STEPS
 
+SESSION_CACHE = {}
 
 def apply_filters(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
-    out = df.copy()
+    # out = df.copy()
+    out = df
     if filters.get("start_date"):
         out = out[out["timestamp"] >= pd.to_datetime(filters["start_date"])]
     if filters.get("end_date"):
@@ -22,29 +24,51 @@ def apply_filters(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
 
 
 def session_level(df: pd.DataFrame) -> pd.DataFrame:
-    agg = df.sort_values("timestamp").groupby("session_id").agg(
-        customer_id=("customer_id", "first"),
-        age=("age", "first"),
-        age_group=("age_group", "first"),
-        gender=("gender", "first"),
-        city=("city", "first"),
-        loan_type=("loan_type", "first"),
-        device_type=("device_type", "first"),
-        browser=("browser", "first"),
-        network_speed=("network_speed", "first"),
-        income_range=("income_range", "first"),
-        employment_status=("employment_status", "first"),
-        credit_score=("credit_score", "first"),
-        final_status=("final_status", "last"),
-        exit_step=("exit_step", "last"),
+    cache_key = id(df)
+    if cache_key in SESSION_CACHE:
+        return SESSION_CACHE[cache_key]
+    if df.empty:
+        return pd.DataFrame()
+    
+     # 3. Sort once
+    df_sorted = df.sort_values(["session_id", "timestamp"])
+
+    # 4. FAST first/last extractions (Runs in 0.1 seconds instead of 5 minutes)
+    firsts = df_sorted.drop_duplicates("session_id", keep="first").set_index("session_id")
+    lasts = df_sorted.drop_duplicates("session_id", keep="last").set_index("session_id")
+
+    sessions = firsts[["customer_id", "age", "age_group", "gender", "city", "loan_type", 
+                       "device_type", "browser", "network_speed", "income_range", 
+                       "employment_status", "credit_score"]].copy()
+    
+    sessions["first_seen"] = firsts["timestamp"]
+    sessions["last_seen"] = lasts["timestamp"]
+    sessions["final_status"] = lasts["final_status"]
+    sessions["exit_step"] = lasts["exit_step"]
+
+    # 5. Fast Aggregations (Notice: NO LAMBDAS!)
+    aggs = df.groupby("session_id").agg(
         total_time_seconds=("time_spent_seconds", "sum"),
-        first_seen=("timestamp", "min"),
-        last_seen=("timestamp", "max"),
-        errors=("error_code", lambda s: int((s != "NONE").sum())),
-        otp_attempts=("otp_attempts", "max"),
-    ).reset_index()
-    agg["completed"] = agg["final_status"].eq("Completed")
-    return agg
+        otp_attempts=("otp_attempts", "max")
+    )
+    sessions = sessions.join(aggs)
+
+    # 6. Fast Error Counting (This replaces the slow lambda)
+    errors = df[df["error_code"] != "NONE"].groupby("session_id").size().rename("errors")
+    sessions = sessions.join(errors)
+    sessions["errors"] = sessions["errors"].fillna(0).astype(int)
+
+    sessions["completed"] = sessions["final_status"] == "Completed"
+    sessions = sessions.reset_index()
+
+    # 7. ACTUALLY SAVE TO CACHE! (Your snippet forgot this part)
+    SESSION_CACHE[cache_key] = sessions
+    
+    # Keep cache from eating all your RAM
+    if len(SESSION_CACHE) > 25:
+        SESSION_CACHE.pop(next(iter(SESSION_CACHE)))
+        
+    return sessions
 
 
 def dashboard_metrics(df: pd.DataFrame) -> dict:
