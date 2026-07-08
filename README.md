@@ -15,7 +15,7 @@ OnboardIQ is a hackathon-ready decision support platform for fintech onboarding 
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r backend/requirements.txt
-uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
+python -m uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 ```bash
