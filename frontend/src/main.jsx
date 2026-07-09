@@ -202,7 +202,7 @@ function Shell({ user, onLogout, children, active, setActive }) {
             <Logo size={38} variant="color" />
             <div><div className="text-base font-bold leading-tight">OnboardIQ</div><div className="text-xs text-blue-300 mt-0.5">Journey Intelligence</div></div>
           </div>
-          <button onClick={() => setIsOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-blue-200 hover:text-white"><ChevronLeft size={20} /></button>
+          <button onClick={() => setIsOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-blue-200 hover:text-white lg:hidden"><ChevronLeft size={20} /></button>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
           {NAV.map(([label, Icon]) => (
@@ -322,6 +322,24 @@ function FilteredOut({ dimension, value }) {
 function Dashboard({ data, filters }) {
   if (!data) return <Loading />;
   const { kpis, charts } = data;
+
+  function StackedXAxisTick({ x, y, payload }) {
+  if (!payload || !payload.value) return null;
+  
+  const words = payload.value.split(' ');
+
+  return (
+    
+    <text x={x} y={y + 12} textAnchor="middle" fill="#64748b" fontSize={9}>
+      {words.map((word, i) => (
+        
+        <tspan x={x} dy={i === 0 ? 0 : 10} key={i}>
+          {word}
+        </tspan>
+      ))}
+    </text>
+  );
+}
   
   // Safely extract string values
   const deviceVal = filters.device_type?.value || 'All';
@@ -343,31 +361,106 @@ function Dashboard({ data, filters }) {
       </div>
       
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        
+        {/* 1. FUNNEL */}
         <ChartBox id="funnel" title="Interactive Funnel" csvKind="funnel" filters={filters}>
-          <ResponsiveContainer><AreaChart data={charts.funnel}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="step" tick={{ fontSize: 11 }} /><YAxis /><Tooltip /><Area dataKey="reached" stroke="#2F80ED" fill="#2F80ED" fillOpacity={0.18} /><Area dataKey="completed" stroke="#12B886" fill="#12B886" fillOpacity={0.25} /></AreaChart></ResponsiveContainer>
+          <ResponsiveContainer>
+            {/* FIX: Added margin with bottom: 30 */}
+            <AreaChart data={charts.funnel} margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="step" interval={0} height={70} tick={<StackedXAxisTick/>} label={{ value: 'Onboarding Steps', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} />
+              <YAxis width={75} label={{ value: 'Number of Users', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} tick={{ fontSize: 10 }} />
+              <Tooltip />
+              <Area dataKey="reached" stroke="#2F80ED" fill="#2F80ED" fillOpacity={0.18} />
+              <Area dataKey="completed" stroke="#12B886" fill="#12B886" fillOpacity={0.25} />
+            </AreaChart>
+          </ResponsiveContainer>
         </ChartBox>
         
+        {/* 2. DROP-OFF */}
         <ChartBox id="dropoff" title="Drop-off by Step" csvKind="dropoff" filters={filters}>
-          <ResponsiveContainer><BarChart data={charts.dropoff}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="step" tick={{ fontSize: 11 }} /><YAxis /><Tooltip /><Bar dataKey="dropoffs" fill="#E03131" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
+          <ResponsiveContainer>
+            {/* FIX: Set bottom: 30 */}
+            <BarChart data={charts.dropoff} margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              {/* FIX: Removed rogue angle={45} and set height to 70 for consistency */}
+              <XAxis dataKey="step" interval={0} height={70} tick={<StackedXAxisTick />} label={{ value: 'Onboarding Steps', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} />
+              <YAxis width={75} label={{ value: 'User Drop-offs', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} tick={{ fontSize: 10 }} />
+              <Tooltip />
+              <Bar dataKey="dropoffs" fill="#E03131" radius={[5, 5, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </ChartBox>
         
-        <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
-          <ResponsiveContainer width="100%" height={300}><BarChart data={charts.completion_by_device}><CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="device_type" tick={{ fontSize: 10 }} interval={0} /><YAxis domain={[0, 100]}/><Tooltip /><Bar dataKey="completion_rate"fill="#2F80ED"radius={[6, 6, 0, 0]}/>
-          </BarChart></ResponsiveContainer>
-        </ChartBox>
+        {/* 3. DEVICE */}
+        {deviceActive ? (
+          <FilteredOut dimension="Device" value={filters.device_type} />
+        ) : (
+          <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
+            <ResponsiveContainer width="100%" height={300}>
+              {/* FIX: Added margin with bottom: 30 */}
+              <BarChart data={charts.completion_by_device} margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="device_type" height={70} label={{ value: 'Device Type', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} tick={{ fontSize: 10 }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} width={75} label={{ value: 'Completion Rate (%)', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} />
+                <Tooltip />
+                <Bar dataKey="completion_rate" fill="#2F80ED" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartBox>
+        )}
         
-        <ChartBox id="age" title="Completion by Age Group" filters={filters}>
-           <ResponsiveContainer width="100%" height={300}><BarChart data={charts.completion_by_age}layout="vertical"margin={{ left: 20, right: 20 }}><CartesianGrid strokeDasharray="3 3" /><XAxis type="number"domain={[0, 100]}/><YAxis type="category"dataKey="age_group"width={80}/><Tooltip /><Bar dataKey="completion_rate"fill="#7048E8"radius={[0, 6, 6, 0]}/></BarChart></ResponsiveContainer>
-        </ChartBox>
+        {/* 4. AGE GROUP */}
+        {ageActive ? (
+          <FilteredOut dimension="Age Group" value={filters.age_group} />
+        ) : (
+          <ChartBox id="age" title="Completion by Age Group" filters={filters}>
+            <ResponsiveContainer width="100%" height={300}>
+              {/* FIX: Set bottom: 30 */}
+              <BarChart data={charts.completion_by_age} layout="vertical" margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                {/* FIX: Increased height slightly to fit label */}
+                <XAxis type="number" domain={[0, 100]} height={50} label={{ value: 'Completion Rate (%)', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} tick={{ fontSize: 10 }} />
+                <YAxis type="category" dataKey="age_group" width={75} label={{ value: 'Age Groups', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Bar dataKey="completion_rate" fill="#7048E8" radius={[0, 6, 6, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartBox>
+        )}
         
-        <ChartBox id="loan" title="Completion by Loan Type" filters={filters}>
-          <ResponsiveContainer><BarChart data={charts.completion_by_loan}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="loan_type" tick={{ fontSize: 10 }} interval={0} /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#0CA678" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
-        </ChartBox>
+        {/* 5. LOAN TYPE */}
+        {loanActive ? (
+          <FilteredOut dimension="Loan Type" value={filters.loan_type} />
+        ) : (
+          <ChartBox id="loan" title="Completion by Loan Type" filters={filters}>
+            <ResponsiveContainer>
+              {/* FIX: Added margin with bottom: 30 */}
+              <BarChart data={charts.completion_by_loan} margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="loan_type" height={70} label={{ value: 'Loan Product', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} tick={{ fontSize: 10 }} />
+                <YAxis domain={[0, 100]} width={75} label={{ value: 'Completion Rate (%)', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Bar dataKey="completion_rate" fill="#0CA678" radius={[5, 5, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartBox>
+        )}
         
+        {/* 6. DAILY TREND */}
         <ChartBox id="daily" title="Daily Trend" filters={filters}>
-          <ResponsiveContainer><LineChart data={charts.daily_trend}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" tick={{ fontSize: 10 }} /><YAxis domain={[0, 100]} /><Tooltip /><Line type="monotone" dataKey="completion_rate" stroke="#2F80ED" strokeWidth={2} dot={false} /></LineChart></ResponsiveContainer>
+          <ResponsiveContainer>
+            {/* FIX: Added margin with bottom: 30 */}
+            <LineChart data={charts.daily_trend} margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" height={70} label={{ value: 'Date', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} tick={{ fontSize: 10 }} />
+              <YAxis domain={[0, 100]} width={75} label={{ value: 'Completion Rate (%)', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} tick={{ fontSize: 10 }} />
+              <Tooltip />
+              <Line type="monotone" dataKey="completion_rate" stroke="#2F80ED" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
         </ChartBox>
+
       </div>
     </div>
   );
@@ -664,15 +757,6 @@ function ActionBrief({ filters }) {
 
   if (!data) return <Loading />;
   const { action_cards: cards = [], top_findings: findings = [] } = data;
-
-  if (cards.length === 0 && findings.length === 0) {
-    return (
-      <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500 shadow-soft">
-        <h3 className="text-lg font-bold text-slate-700">No data found / Insufficient data</h3>
-        <p className="mt-2 text-sm text-slate-500">There are fewer than 10 sessions matching the selected filters. Try expanding your date range or selecting different filter options.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-5">
