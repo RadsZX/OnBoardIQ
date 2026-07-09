@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line,
-  PieChart, Pie, Cell, AreaChart, Area,
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Legend, CartesianGrid, Tooltip, LineChart, Line,
+  AreaChart, Area,
 } from 'recharts';
 import {
   Activity, AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, Download, FileDown, Gauge,
@@ -355,7 +355,9 @@ function Dashboard({ data, filters }) {
           <FilteredOut dimension="Device" value={deviceVal} />
         ) : (
           <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
-            <ResponsiveContainer><PieChart><Pie data={charts.completion_by_device} dataKey="completion_rate" nameKey="device_type" outerRadius={105} label>{charts.completion_by_device.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer>
+          <ResponsiveContainer width="100%" height={300}><BarChart data={charts.completion_by_device}><CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="device_type" /><YAxis domain={[0, 100]}/><Tooltip /><Bar dataKey="completion_rate"fill="#2F80ED"radius={[6, 6, 0, 0]}/>
+          </BarChart></ResponsiveContainer>
           </ChartBox>
         )}
         
@@ -363,7 +365,7 @@ function Dashboard({ data, filters }) {
           <FilteredOut dimension="Age Group" value={ageVal} />
         ) : (
           <ChartBox id="age" title="Completion by Age Group" filters={filters}>
-            <ResponsiveContainer><BarChart data={charts.completion_by_age}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="age_group" /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="completion_rate" fill="#7048E8" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
+           <ResponsiveContainer width="100%" height={300}><BarChart data={charts.completion_by_age}layout="vertical"margin={{ left: 20, right: 20 }}><CartesianGrid strokeDasharray="3 3" /><XAxis type="number"domain={[0, 100]}/><YAxis type="category"dataKey="age_group"width={80}/><Tooltip /><Bar dataKey="completion_rate"fill="#7048E8"radius={[0, 6, 6, 0]}/></BarChart></ResponsiveContainer>
           </ChartBox>
         )}
         

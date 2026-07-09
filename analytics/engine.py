@@ -7,13 +7,10 @@ import pandas as pd
 
 from synthetic_data.generator import FLOW_STEPS
 
-<<<<<<< HEAD
 SESSION_CACHE = {}
-=======
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
 
 def apply_filters(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
-    # out = df.copy()
+    #out = df.copy()
     out = df
     if filters.get("start_date"):
         out = out[out["timestamp"] >= pd.to_datetime(filters["start_date"])]
@@ -28,11 +25,8 @@ def apply_filters(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
 
 def session_level(df: pd.DataFrame) -> pd.DataFrame:
     cache_key = id(df)
-<<<<<<< HEAD
     if cache_key in SESSION_CACHE:
         return SESSION_CACHE[cache_key]
-=======
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
     if df.empty:
         return pd.DataFrame()
     
@@ -66,7 +60,6 @@ def session_level(df: pd.DataFrame) -> pd.DataFrame:
 
     sessions["completed"] = sessions["final_status"] == "Completed"
     sessions = sessions.reset_index()
-<<<<<<< HEAD
 
     # 7. ACTUALLY SAVE TO CACHE! (Your snippet forgot this part)
     SESSION_CACHE[cache_key] = sessions
@@ -74,8 +67,6 @@ def session_level(df: pd.DataFrame) -> pd.DataFrame:
     # Keep cache from eating all your RAM
     if len(SESSION_CACHE) > 25:
         SESSION_CACHE.pop(next(iter(SESSION_CACHE)))
-=======
->>>>>>> 320ebd063f2325792ce09abfd6d7e204b0bc5463
         
     return sessions
 
