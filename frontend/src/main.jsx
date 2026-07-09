@@ -324,34 +324,22 @@ function Dashboard({ data, filters }) {
   const { kpis, charts } = data;
 
   function StackedXAxisTick({ x, y, payload }) {
-  if (!payload || !payload.value) return null;
-  
-  const words = payload.value.split(' ');
-
-  return (
-    
-    <text x={x} y={y + 12} textAnchor="middle" fill="#64748b" fontSize={9}>
-      {words.map((word, i) => (
-        
-        <tspan x={x} dy={i === 0 ? 0 : 10} key={i}>
-          {word}
-        </tspan>
-      ))}
-    </text>
-  );
-}
-  
-  // Safely extract string values
-  const deviceVal = filters.device_type?.value || 'All';
-  const ageVal = filters.age_group?.value || 'All';
-  const loanVal = filters.loan_type?.value || 'All';
-
-  const deviceActive = deviceVal !== 'All';
-  const ageActive = ageVal !== 'All';
-  const loanActive = loanVal !== 'All';
+    if (!payload || !payload.value) return null;
+    const words = payload.value.split(' ');
+    return (
+      <text x={x} y={y + 12} textAnchor="middle" fill="#64748b" fontSize={9}>
+        {words.map((word, i) => (
+          <tspan x={x} dy={i === 0 ? 0 : 10} key={i}>
+            {word}
+          </tspan>
+        ))}
+      </text>
+    );
+  }
 
   return (
     <div className="space-y-5">
+      {/* ── KPI Cards ── */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
         <Card label="Total Sessions" value={kpis.total_sessions.toLocaleString()} icon={Users} />
         <Card label="Completion Rate" value={`${kpis.completion_rate}%`} icon={UserRoundCheck} tone="green" />
@@ -365,7 +353,6 @@ function Dashboard({ data, filters }) {
         {/* 1. FUNNEL */}
         <ChartBox id="funnel" title="Interactive Funnel" csvKind="funnel" filters={filters}>
           <ResponsiveContainer>
-            {/* FIX: Added margin with bottom: 30 */}
             <AreaChart data={charts.funnel} margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="step" interval={0} height={70} tick={<StackedXAxisTick/>} label={{ value: 'Onboarding Steps', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} />
@@ -380,10 +367,8 @@ function Dashboard({ data, filters }) {
         {/* 2. DROP-OFF */}
         <ChartBox id="dropoff" title="Drop-off by Step" csvKind="dropoff" filters={filters}>
           <ResponsiveContainer>
-            {/* FIX: Set bottom: 30 */}
             <BarChart data={charts.dropoff} margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              {/* FIX: Removed rogue angle={45} and set height to 70 for consistency */}
               <XAxis dataKey="step" interval={0} height={70} tick={<StackedXAxisTick />} label={{ value: 'Onboarding Steps', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} />
               <YAxis width={75} label={{ value: 'User Drop-offs', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} tick={{ fontSize: 10 }} />
               <Tooltip />
@@ -392,65 +377,48 @@ function Dashboard({ data, filters }) {
           </ResponsiveContainer>
         </ChartBox>
         
-        {/* 3. DEVICE */}
-        {deviceActive ? (
-          <FilteredOut dimension="Device" value={filters.device_type} />
-        ) : (
-          <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
-            <ResponsiveContainer width="100%" height={300}>
-              {/* FIX: Added margin with bottom: 30 */}
-              <BarChart data={charts.completion_by_device} margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="device_type" height={70} label={{ value: 'Device Type', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} tick={{ fontSize: 10 }} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} width={75} label={{ value: 'Completion Rate (%)', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} />
-                <Tooltip />
-                <Bar dataKey="completion_rate" fill="#2F80ED" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartBox>
-        )}
+        {/* 3. DEVICE - ALWAYS SHOW */}
+        <ChartBox id="device" title="Completion by Device" csvKind="completion_by_device" filters={filters}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={charts.completion_by_device} margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="device_type" height={70} label={{ value: 'Device Type', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} tick={{ fontSize: 10 }} />
+              <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} width={75} label={{ value: 'Completion Rate (%)', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} />
+              <Tooltip />
+              <Bar dataKey="completion_rate" fill="#2F80ED" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartBox>
         
-        {/* 4. AGE GROUP */}
-        {ageActive ? (
-          <FilteredOut dimension="Age Group" value={filters.age_group} />
-        ) : (
-          <ChartBox id="age" title="Completion by Age Group" filters={filters}>
-            <ResponsiveContainer width="100%" height={300}>
-              {/* FIX: Set bottom: 30 */}
-              <BarChart data={charts.completion_by_age} layout="vertical" margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                {/* FIX: Increased height slightly to fit label */}
-                <XAxis type="number" domain={[0, 100]} height={50} label={{ value: 'Completion Rate (%)', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} tick={{ fontSize: 10 }} />
-                <YAxis type="category" dataKey="age_group" width={75} label={{ value: 'Age Groups', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Bar dataKey="completion_rate" fill="#7048E8" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartBox>
-        )}
+        {/* 4. AGE GROUP - ALWAYS SHOW */}
+        <ChartBox id="age" title="Completion by Age Group" filters={filters}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={charts.completion_by_age} layout="vertical" margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" domain={[0, 100]} height={50} label={{ value: 'Completion Rate (%)', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} tick={{ fontSize: 10 }} />
+              <YAxis type="category" dataKey="age_group" width={75} label={{ value: 'Age Groups', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} tick={{ fontSize: 10 }} />
+              <Tooltip />
+              <Bar dataKey="completion_rate" fill="#7048E8" radius={[0, 6, 6, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartBox>
         
-        {/* 5. LOAN TYPE */}
-        {loanActive ? (
-          <FilteredOut dimension="Loan Type" value={filters.loan_type} />
-        ) : (
-          <ChartBox id="loan" title="Completion by Loan Type" filters={filters}>
-            <ResponsiveContainer>
-              {/* FIX: Added margin with bottom: 30 */}
-              <BarChart data={charts.completion_by_loan} margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="loan_type" height={70} label={{ value: 'Loan Product', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} tick={{ fontSize: 10 }} />
-                <YAxis domain={[0, 100]} width={75} label={{ value: 'Completion Rate (%)', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Bar dataKey="completion_rate" fill="#0CA678" radius={[5, 5, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartBox>
-        )}
+        {/* 5. LOAN TYPE - ALWAYS SHOW */}
+        <ChartBox id="loan" title="Completion by Loan Type" filters={filters}>
+          <ResponsiveContainer>
+            <BarChart data={charts.completion_by_loan} margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="loan_type" height={70} label={{ value: 'Loan Product', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} tick={{ fontSize: 10 }} />
+              <YAxis domain={[0, 100]} width={75} label={{ value: 'Completion Rate (%)', angle: -90, position: 'insideLeft', offset: 15, fill: '#64748b', fontSize: 12, fontWeight: 600, style: { textAnchor: 'middle' } }} tick={{ fontSize: 10 }} />
+              <Tooltip />
+              <Bar dataKey="completion_rate" fill="#0CA678" radius={[5, 5, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartBox>
         
         {/* 6. DAILY TREND */}
         <ChartBox id="daily" title="Daily Trend" filters={filters}>
           <ResponsiveContainer>
-            {/* FIX: Added margin with bottom: 30 */}
             <LineChart data={charts.daily_trend} margin={{ top: 10, right: 20, left: 10, bottom: 30 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" height={70} label={{ value: 'Date', position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 12, fontWeight: 600 }} tick={{ fontSize: 10 }} />
