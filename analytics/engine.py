@@ -73,6 +73,15 @@ def session_level(df: pd.DataFrame) -> pd.DataFrame:
 
 def dashboard_metrics(df: pd.DataFrame) -> dict:
     sessions = session_level(df)
+    if sessions.empty:
+        return {
+            "total_sessions": 0,
+            "completion_rate": 0.0,
+            "average_completion_time_minutes": 0.0,
+            "highest_dropoff_step": "None",
+            "most_common_error": "None",
+            "completed_applications": 0,
+        }
     total = len(sessions)
     completed = int(sessions["completed"].sum())
     completion_rate = completed / total if total else 0
@@ -97,6 +106,16 @@ def chart_payloads(df: pd.DataFrame) -> dict:
         reached = int(df[df["step_name"] == step]["session_id"].nunique())
         completed = int(df[(df["step_name"] == step) & (df["completed_step"])]["session_id"].nunique())
         funnel.append({"step": step, "reached": reached, "completed": completed, "dropoff": reached - completed})
+
+    if sessions.empty:
+        return {
+            "funnel": funnel,
+            "dropoff": [{"step": step, "dropoffs": 0} for step in FLOW_STEPS],
+            "completion_by_device": [],
+            "completion_by_age": [],
+            "completion_by_loan": [],
+            "daily_trend": [],
+        }
 
     dropoff = sessions.loc[~sessions["completed"], "exit_step"].value_counts().reindex(FLOW_STEPS, fill_value=0)
     by_device = sessions.groupby("device_type")["completed"].mean().mul(100).round(1).reset_index(name="completion_rate")
@@ -142,6 +161,8 @@ def journey_for_customer(df: pd.DataFrame, customer_id: str) -> dict:
 
 def segmentation(df: pd.DataFrame, dimension: str) -> list[dict]:
     sessions = session_level(df)
+    if sessions.empty:
+        return []
     allowed = {"age_group", "income_range", "device_type", "loan_type", "employment_status"}
     if dimension not in allowed:
         dimension = "age_group"
@@ -159,6 +180,8 @@ def segmentation(df: pd.DataFrame, dimension: str) -> list[dict]:
 
 def root_causes(df: pd.DataFrame) -> list[dict]:
     sessions = session_level(df)
+    if sessions.empty:
+        return []
     base_completed = sessions["completed"].mean()
     cause_defs = [
         ("Slow Internet", sessions["network_speed"].eq("Slow"), "Network friction during OTP, KYC, and upload"),
@@ -232,7 +255,7 @@ def _impact_text(impact_points: float, recovered_apps: int, revenue: int) -> str
     return f"+{impact_points:.1f}% completion, ~{recovered_apps:,} additional applications, ~Rs {revenue:,} revenue"
 
 
-def action_brief_cards(df: pd.DataFrame, min_sample: int = 20) -> list[dict]:
+def action_brief_cards(df: pd.DataFrame, min_sample: int = 10) -> list[dict]:
     sessions = session_level(df)
     if len(sessions) < min_sample:
         return []
@@ -374,7 +397,14 @@ def action_brief_cards(df: pd.DataFrame, min_sample: int = 20) -> list[dict]:
 
 def executive_insights(df: pd.DataFrame, recs: list[dict]) -> dict:
     sessions = session_level(df)
-    MIN_N = 20  # minimum sessions in each comparison group for an insight to be valid
+    if sessions.empty:
+        return {
+            "top_findings": [],
+            "top_recommendations": [],
+            "action_cards": [],
+            "model_drivers": [],
+        }
+    MIN_N = 10  # minimum sessions in each comparison group for an insight to be valid
     top: list[str] = []
 
     # Insight 1: Document Upload share of abandonments — only if >= 10%
